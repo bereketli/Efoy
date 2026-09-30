@@ -47,8 +47,4 @@ make dev              # migrates, then runs all services with hot reload + the w
 `make generate`, `make migrate-new name=...`, `make mock` (mock API from the
 OpenAPI spec on :4010).
 
-## Configuration
 
-Services read `EFOY_*` environment variables, and a double underscore marks
-nesting: `EFOY_HTTP__ADDR=:9000` sets `http.addr`. An optional YAML file can be
-passed with `EFOY_CONFIG_FILE`. Defaults are in `internal/config/config.go`.
