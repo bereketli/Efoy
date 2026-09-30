@@ -1,0 +1,379 @@
+openapi: 3.0.3
+info:
+  title: Efoy API
+  version: 0.1.0
+  description: |
+    Public REST API for the Efoy shared-commute platform (design doc section 12).
+    This file is the source of truth: the Go server (oapi-codegen) and the web
+    client (openapi-typescript) are generated from it. Add an endpoint here
+    first, the same day it is built.
+
+    Conventions: RFC 3339 UTC timestamps, cursor pagination
+    (`?limit=&cursor=` -> `next_cursor`), RFC 9457 problem+json errors,
+    `Accept-Language: am | en | om`.
+servers:
+  - url: https://api.efoy.et
+    description: Production
+  - url: http://localhost:8080
+    description: Local development
+tags:
+  - name: health
+  - name: auth
+  - name: me
+security:
+  - bearerAuth: []
+
+paths:
+  /healthz:
+    get:
+      tags: [health]
+      operationId: getHealthz
+      summary: Liveness probe
+      security: []
+      responses:
+        "200":
+          description: The process is serving requests.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HealthStatus" }
+              example: { status: ok, service: core-api, version: v0.1.0 }
+
+  /readyz:
+    get:
+      tags: [health]
+      operationId: getReadyz
+      summary: Readiness probe (checks dependencies such as Postgres)
+      security: []
+      responses:
+        "200":
+          description: All dependencies are reachable.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HealthStatus" }
+              example: { status: ok, service: core-api, version: v0.1.0, checks: { postgres: ok } }
+        "503":
+          description: At least one dependency is unavailable.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HealthStatus" }
+              example: { status: unavailable, service: core-api, version: v0.1.0, checks: { postgres: fail } }
+
+  /v1/auth/otp/request:
+    post:
+      tags: [auth]
+      operationId: requestOtp
+      summary: Send a 6-digit SMS OTP to a phone number
+      description: Rate-limited to 3 requests per 10 minutes per phone (FR-IAM-1).
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OtpRequest" }
+            example: { phone_e164: "+251911234567" }
+      responses:
+        "202":
+          description: OTP sent.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OtpRequested" }
+              example: { expires_in_s: 300, resend_after_s: 60 }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+
+  /v1/auth/otp/verify:
+    post:
+      tags: [auth]
+      operationId: verifyOtp
+      summary: Verify an OTP and receive access and refresh tokens
+      description: 5-minute expiry and at most 5 attempts per OTP (FR-IAM-1). Creates the user on first login.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OtpVerify" }
+            example:
+              phone_e164: "+251911234567"
+              code: "482913"
+              device: { platform: ANDROID, app_version: "1.0.0" }
+      responses:
+        "200":
+          description: Logged in.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenPair" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+
+  /v1/auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      summary: Staff login for the web portals (email + password + TOTP)
+      description: |
+        TOTP is mandatory for DISPATCHER, SUPPORT_AGENT and SUPER_ADMIN (FR-IAM-2).
+        When a required code is missing the API answers 401 with code `TOTP_REQUIRED`.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginRequest" }
+            example: { email: "dispatcher@efoy.et", password: "correct horse battery staple", totp_code: "123456" }
+      responses:
+        "200":
+          description: Logged in.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenPair" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+
+  /v1/auth/refresh:
+    post:
+      tags: [auth]
+      operationId: refreshTokens
+      summary: Rotate a refresh token
+      description: Refresh tokens rotate on every use; reusing an old one revokes the whole family (FR-IAM-3).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RefreshRequest" }
+      responses:
+        "200":
+          description: New token pair.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenPair" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /v1/auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: Revoke the current session
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RefreshRequest" }
+      responses:
+        "204": { description: Session revoked. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /v1/me:
+    get:
+      tags: [me]
+      operationId: getMe
+      summary: Current user's profile, roles and linked riders
+      responses:
+        "200":
+          description: The authenticated user.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Me" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: EdDSA-signed access token, 15-minute lifetime.
+
+  parameters:
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      required: false
+      schema: { $ref: "#/components/schemas/Language" }
+
+  responses:
+    BadRequest:
+      description: The request is invalid.
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+          example:
+            type: https://docs.efoy.et/errors/validation
+            title: Invalid request
+            status: 400
+            code: VALIDATION_FAILED
+            detail: phone_e164 must be in E.164 format, e.g. +251911234567.
+    Unauthorized:
+      description: Missing, invalid or expired credentials.
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+          example:
+            type: https://docs.efoy.et/errors/unauthorized
+            title: Unauthorized
+            status: 401
+            code: INVALID_CREDENTIALS
+    TooManyRequests:
+      description: Rate limit exceeded.
+      headers:
+        Retry-After:
+          schema: { type: integer }
+          description: Seconds to wait before retrying.
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+
+  schemas:
+    Problem:
+      type: object
+      description: RFC 9457 problem details.
+      required: [type, title, status, code]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        code: { type: string, description: Stable machine-readable error code. }
+        detail: { type: string }
+
+    HealthStatus:
+      type: object
+      required: [status, service, version]
+      properties:
+        status: { type: string, enum: [ok, unavailable] }
+        service: { type: string }
+        version: { type: string }
+        checks:
+          type: object
+          additionalProperties: { type: string, enum: [ok, fail] }
+
+    Language:
+      type: string
+      enum: [am, en, om]
+
+    PhoneE164:
+      type: string
+      pattern: '^\+[1-9][0-9]{7,14}$'
+      example: "+251911234567"
+
+    Role:
+      type: string
+      enum:
+        - STUDENT_RIDER
+        - CIVIL_SERVANT_RIDER
+        - GUARDIAN
+        - DRIVER
+        - FLEET_OWNER
+        - INSTITUTION_ADMIN
+        - DISPATCHER
+        - SUPPORT_AGENT
+        - SUPER_ADMIN
+
+    Scope:
+      type: string
+      enum: [GLOBAL, INSTITUTION, FLEET, ZONE]
+
+    RoleGrant:
+      type: object
+      required: [role, scope]
+      properties:
+        role: { $ref: "#/components/schemas/Role" }
+        scope: { $ref: "#/components/schemas/Scope" }
+        scope_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Institution, fleet or zone id; null for GLOBAL.
+
+    DevicePlatform:
+      type: string
+      enum: [ANDROID, IOS, WEB]
+
+    DeviceInfo:
+      type: object
+      required: [platform]
+      properties:
+        platform: { $ref: "#/components/schemas/DevicePlatform" }
+        push_token: { type: string }
+        app_version: { type: string }
+        os_version: { type: string }
+
+    OtpRequest:
+      type: object
+      required: [phone_e164]
+      properties:
+        phone_e164: { $ref: "#/components/schemas/PhoneE164" }
+
+    OtpRequested:
+      type: object
+      required: [expires_in_s, resend_after_s]
+      properties:
+        expires_in_s: { type: integer, example: 300 }
+        resend_after_s: { type: integer, example: 60 }
+
+    OtpVerify:
+      type: object
+      required: [phone_e164, code]
+      properties:
+        phone_e164: { $ref: "#/components/schemas/PhoneE164" }
+        code: { type: string, pattern: '^[0-9]{6}$' }
+        device: { $ref: "#/components/schemas/DeviceInfo" }
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password, minLength: 12 }
+        totp_code: { type: string, pattern: '^[0-9]{6}$' }
+
+    RefreshRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token: { type: string }
+
+    TokenPair:
+      type: object
+      required: [access_token, token_type, expires_in, refresh_token, user]
+      properties:
+        access_token: { type: string, description: EdDSA-signed JWT. }
+        token_type: { type: string, enum: [Bearer] }
+        expires_in: { type: integer, description: Access token lifetime in seconds., example: 900 }
+        refresh_token: { type: string, description: Opaque token, 30-day sliding expiry. }
+        user: { $ref: "#/components/schemas/Me" }
+      example:
+        access_token: eyJhbGciOiJFZERTQSIsImtpZCI6IjIwMjYtMDkifQ.e30.c2ln
+        token_type: Bearer
+        expires_in: 900
+        refresh_token: 3q2-7wEXAMPLEonlyEXAMPLEonly
+        user:
+          id: 01926f3a-7c1e-7d2b-9a41-5f0c3b8e2d11
+          full_name: Abebe Kebede
+          phone_e164: "+251911234567"
+          preferred_language: am
+          roles: [{ role: GUARDIAN, scope: GLOBAL, scope_id: null }]
+          linked_rider_ids: []
+
+    Me:
+      type: object
+      required: [id, full_name, preferred_language, roles, linked_rider_ids]
+      properties:
+        id: { type: string, format: uuid }
+        full_name: { type: string }
+        full_name_am: { type: string, nullable: true }
+        phone_e164: { type: string, nullable: true }
+        email: { type: string, format: email, nullable: true }
+        preferred_language: { $ref: "#/components/schemas/Language" }
+        photo_url: { type: string, format: uri, nullable: true, description: Short-lived signed URL. }
+        roles:
+          type: array
+          items: { $ref: "#/components/schemas/RoleGrant" }
+        linked_rider_ids:
+          type: array
+          description: Riders this user guards or is.
+          items: { type: string, format: uuid }

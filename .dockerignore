@@ -1,0 +1,11 @@
+.git
+.github
+.env
+.env.*
+bin
+tmp
+docs
+deploy/osrm/data
+**/node_modules
+**/.next
+*.md
