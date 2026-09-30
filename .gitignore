@@ -1,0 +1,41 @@
+# --- Secrets & local config -------------------------------------------------
+# Secrets never go into Git (day-20 go/no-go checklist).
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.age
+config.local.yaml
+
+# --- Go ---------------------------------------------------------------------
+/bin/
+/tmp/
+*.exe
+*.test
+*.out
+coverage.*
+go.work
+go.work.sum
+
+# --- Local data -------------------------------------------------------------
+# OSRM map extracts and preprocessed graphs (hundreds of MB).
+deploy/osrm/data/
+*.osm.pbf
+*.osrm*
+
+# --- Node / Next.js (see also web/.gitignore) -------------------------------
+node_modules/
+
+# --- Terraform --------------------------------------------------------------
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# --- Editors & OS -----------------------------------------------------------
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+.DS_Store
+Thumbs.db

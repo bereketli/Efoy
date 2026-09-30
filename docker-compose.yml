@@ -1,0 +1,129 @@
+# Local development stack (section 9.5 of the design doc).
+#   docker compose up -d   then   make dev
+# The first start downloads the Ethiopia OSM extract (~120 MB) and preprocesses
+# it for OSRM, which takes a few minutes; later starts reuse the volume.
+
+name: efoy
+
+services:
+  postgres:
+    # PostgreSQL 16 with PostGIS and TimescaleDB preinstalled and preloaded.
+    image: timescale/timescaledb-ha:pg16
+    environment:
+      POSTGRES_USER: efoy
+      POSTGRES_PASSWORD: efoy
+      POSTGRES_DB: efoy
+      TZ: UTC
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/home/postgres/pgdata
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U efoy -d efoy"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  nats:
+    image: nats:2.10-alpine
+    command: ["-js", "-sd", "/data", "-m", "8222"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - nats-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8222/healthz?js-enabled-only=true"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: minio/minio:latest
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: efoy
+      MINIO_ROOT_PASSWORD: efoy-dev-secret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        mc alias set local http://minio:9000 efoy efoy-dev-secret &&
+        mc mb --ignore-existing local/efoy-documents local/efoy-media local/efoy-exports
+    restart: "no"
+
+  osrm-download:
+    image: curlimages/curl:latest
+    user: "0"
+    volumes:
+      - osrm-data:/data
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        [ -f /data/ethiopia-latest.osm.pbf ] ||
+        curl -fL --retry 3 -o /data/ethiopia-latest.osm.pbf
+        https://download.geofabrik.de/africa/ethiopia-latest.osm.pbf
+    restart: "no"
+
+  osrm-prepare:
+    image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+    depends_on:
+      osrm-download:
+        condition: service_completed_successfully
+    volumes:
+      - osrm-data:/data
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        [ -f /data/.prepared ] || (
+        osrm-extract -p /opt/car.lua /data/ethiopia-latest.osm.pbf &&
+        osrm-partition /data/ethiopia-latest.osrm &&
+        osrm-customize /data/ethiopia-latest.osrm &&
+        touch /data/.prepared )
+    restart: "no"
+
+  osrm:
+    image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+    depends_on:
+      osrm-prepare:
+        condition: service_completed_successfully
+    command: ["osrm-routed", "--algorithm", "mld", "/data/ethiopia-latest.osrm"]
+    ports:
+      - "5000:5000"
+    volumes:
+      - osrm-data:/data
+
+volumes:
+  postgres-data:
+  redis-data:
+  nats-data:
+  minio-data:
+  osrm-data:
