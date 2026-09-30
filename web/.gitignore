@@ -1,0 +1,32 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+
+# production
+/build
+
+# generated from ../api/openapi/efoy.yaml by `npm run gen:api` (runs before dev/build)
+/src/lib/api/schema.d.ts
+
+# env files (keep the example)
+.env*
+!.env.example
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# typescript
+*.tsbuildinfo
+
+# misc
+.DS_Store
+*.pem
+.vercel

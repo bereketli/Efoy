@@ -1,0 +1,44 @@
+{
+  "name": "efoy-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Efoy operations console, institution portal and fleet portal",
+  "engines": {
+    "node": ">=20.9"
+  },
+  "scripts": {
+    "gen:api": "openapi-typescript ../api/openapi/efoy.yaml -o src/lib/api/schema.d.ts",
+    "predev": "npm run gen:api",
+    "dev": "next dev -p 3000",
+    "prebuild": "npm run gen:api",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "eslint .",
+    "typecheck": "npm run gen:api && tsc --noEmit"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.2.3",
+    "@tanstack/react-query": "^5.85.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.540.0",
+    "maplibre-gl": "^5.7.0",
+    "next": "^16.0.0",
+    "openapi-fetch": "^0.14.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.12",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "^16.0.0",
+    "openapi-typescript": "^7.9.1",
+    "tailwindcss": "^4.1.12",
+    "tw-animate-css": "^1.3.7",
+    "typescript": "^5.9.2"
+  }
+}
