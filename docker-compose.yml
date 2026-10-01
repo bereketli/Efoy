@@ -51,34 +51,25 @@ services:
       timeout: 3s
       retries: 20
 
-  minio:
-    image: minio/minio:latest
-    command: ["server", "/data", "--console-address", ":9001"]
+  # S3-compatible object storage for driver documents and media. MinIO stopped
+  # publishing community images in 2025; RustFS is a MinIO-compatible
+  # replacement. core-api creates the documents bucket on startup.
+  s3:
+    image: rustfs/rustfs:latest
     environment:
-      MINIO_ROOT_USER: efoy
-      MINIO_ROOT_PASSWORD: efoy-dev-secret
+      RUSTFS_ACCESS_KEY: efoy
+      RUSTFS_SECRET_KEY: efoy-dev-secret
+      RUSTFS_CONSOLE_ENABLE: "true"
     ports:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - minio-data:/data
+      - s3-data:/data
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/health"]
       interval: 5s
-      timeout: 5s
+      timeout: 3s
       retries: 20
-
-  minio-init:
-    image: minio/mc:latest
-    depends_on:
-      minio:
-        condition: service_healthy
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - >
-        mc alias set local http://minio:9000 efoy efoy-dev-secret &&
-        mc mb --ignore-existing local/efoy-documents local/efoy-media local/efoy-exports
-    restart: "no"
 
   osrm-download:
     image: curlimages/curl:latest
@@ -125,5 +116,5 @@ volumes:
   postgres-data:
   redis-data:
   nats-data:
-  minio-data:
+  s3-data:
   osrm-data:

@@ -19,6 +19,9 @@ spec:
         {{- if .Values.web.enabled }}
         - {{ $h.console }}
         {{- end }}
+        {{- with $h.files }}
+        - {{ . }}
+        {{- end }}
   rules:
     - host: {{ $h.api }}
       http:
@@ -55,5 +58,17 @@ spec:
               service:
                 name: {{ include "efoy.name" (list . "web") }}
                 port: { name: http }
+    {{- end }}
+    {{- with $h.files }}
+    # Apps and browsers PUT/GET document files here with pre-signed URLs.
+    - host: {{ . }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $.Values.ingress.filesService }}
+                port: { number: 9000 }
     {{- end }}
 {{- end }}

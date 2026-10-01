@@ -1,5 +1,5 @@
-# Secret with POSTGRES_PASSWORD, REDIS_PASSWORD, MINIO_ROOT_USER and
-# MINIO_ROOT_PASSWORD, created from deploy/secrets (see deploy/README.md).
+# Secret with POSTGRES_PASSWORD, REDIS_PASSWORD, RUSTFS_ACCESS_KEY and
+# RUSTFS_SECRET_KEY, created from deploy/secrets (see deploy/README.md).
 existingSecret: efoy-deps-secrets
 
 storageClass: ""  # empty = cluster default (local-path on k3s)
@@ -27,11 +27,9 @@ nats:
     requests: { cpu: 50m, memory: 64Mi }
     limits: { memory: 512Mi }
 
-minio:
-  image: minio/minio:latest
-  mcImage: minio/mc:latest
+s3:
+  image: rustfs/rustfs:latest
   storage: 20Gi
-  buckets: [efoy-documents, efoy-media, efoy-exports]
   resources:
     requests: { cpu: 50m, memory: 256Mi }
     limits: { memory: 1Gi }

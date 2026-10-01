@@ -33,14 +33,14 @@ Commit the files `make bootstrap` produces: CI needs `go.sum` and
 ## Run locally
 
 ```sh
-docker compose up -d  # Postgres+PostGIS+TimescaleDB, Redis, NATS, MinIO, OSRM
+docker compose up -d  # Postgres+PostGIS+TimescaleDB, Redis, NATS, S3 storage, OSRM
 make dev              # migrates, then runs all services with hot reload + the web console
 ```
 
 - Console: http://localhost:3000
 - core-api: http://localhost:8080/healthz, http://localhost:8080/readyz
 - Other services: `:8081` tracking-ingest, `:8082` realtime-gateway, `:8083` dispatch-engine, `:8084` workers
-- MinIO console: http://localhost:9001 (efoy / efoy-dev-secret)
+- S3 storage console (RustFS): http://localhost:9001 (efoy / efoy-dev-secret)
 - OSRM: http://localhost:5000. The first `docker compose up` downloads and preprocesses the Ethiopia OSM extract, which takes a few minutes.
 
 `make help` lists every target. Useful ones: `make test`, `make lint`,

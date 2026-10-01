@@ -11,7 +11,9 @@ config:
   EFOY_LOG__LEVEL: debug
   EFOY_REDIS__ADDR: efoy-deps-redis:6379
   EFOY_NATS__URL: nats://efoy-deps-nats:4222
-  EFOY_S3__ENDPOINT: efoy-deps-minio:9000
+  EFOY_S3__ENDPOINT: efoy-deps-s3:9000
+  EFOY_S3__PUBLIC_URL: https://files.staging.efoy.et
+  EFOY_NATS__REPLICAS: "1"
   # Until the SMS gateway lands (day 5), staging OTP codes are in the core-api logs.
   EFOY_SMS__PROVIDER: console
 
@@ -30,3 +32,4 @@ ingress:
     api: api.staging.efoy.et
     realtime: rt.staging.efoy.et
     console: console.staging.efoy.et
+    files: files.staging.efoy.et

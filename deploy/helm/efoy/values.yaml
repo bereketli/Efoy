@@ -85,3 +85,7 @@ ingress:
     api: api.example.com
     realtime: rt.example.com
     console: console.example.com
+    # Pre-signed S3 URLs for document uploads (empty = no ingress).
+    files: ""
+  # Service serving the files host (the efoy-deps S3 storage in staging).
+  filesService: efoy-deps-s3

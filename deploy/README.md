@@ -12,7 +12,7 @@ push to main ─► CI builds and pushes ghcr.io/bereketli/efoy-<service>:<sha>
 | Path | What |
 | --- | --- |
 | `helm/efoy` | The five Go services and the web console, plus the migration job and the Ingress |
-| `helm/efoy-deps` | Staging data stores: Postgres 16 + PostGIS + TimescaleDB, Redis, NATS JetStream, MinIO |
+| `helm/efoy-deps` | Staging data stores: Postgres 16 + PostGIS + TimescaleDB, Redis, NATS JetStream, S3 storage (RustFS) |
 | `argocd/staging.yaml` | The two Argo CD applications |
 | `k3s/traefik-config.yaml` | Let's Encrypt TLS and the HTTP→HTTPS redirect for k3s's bundled Traefik |
 | `secrets/` | SOPS-encrypted Secrets (`*.enc.yaml`) and the template |

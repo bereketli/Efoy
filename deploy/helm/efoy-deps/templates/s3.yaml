@@ -1,0 +1,14 @@
+{{/* S3-compatible object storage (RustFS; MinIO no longer publishes images).
+     core-api creates the buckets it needs on startup. */}}
+{{- $env := list
+  (include "deps.secretEnv" (list . "RUSTFS_ACCESS_KEY") | fromYamlArray | first)
+  (include "deps.secretEnv" (list . "RUSTFS_SECRET_KEY") | fromYamlArray | first)
+  (dict "name" "RUSTFS_CONSOLE_ENABLE" "value" "true")
+-}}
+{{- $probe := dict "httpGet" (dict "path" "/health" "port" 9000) "periodSeconds" 10 -}}
+{{- include "deps.store" (dict
+  "root" . "name" "s3" "cfg" .Values.s3
+  "ports" (dict "api" 9000 "console" 9001)
+  "env" $env "probe" $probe
+  "podSecurityContext" (dict "fsGroup" 10001)
+  "mountPath" "/data") }}
