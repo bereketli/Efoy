@@ -32,7 +32,7 @@ export const MENU: MenuItem[] = [
   { label: "Live map", icon: MapIcon, roles: ["SUPER_ADMIN", "DISPATCHER", "SUPPORT_AGENT"] },
   { label: "Incidents", icon: AlertTriangle, roles: ["SUPER_ADMIN", "DISPATCHER", "SUPPORT_AGENT"] },
   { label: "Trips", icon: CalendarClock, roles: ["SUPER_ADMIN", "DISPATCHER", "SUPPORT_AGENT", "INSTITUTION_ADMIN"] },
-  { label: "Document review", icon: FileCheck2, roles: ["SUPER_ADMIN", "DISPATCHER"] },
+  { label: "Document review", href: "/documents", icon: FileCheck2, roles: ["SUPER_ADMIN", "DISPATCHER"] },
   { label: "Drivers & vehicles", icon: Bus, roles: ["SUPER_ADMIN", "DISPATCHER", "FLEET_OWNER"] },
   { label: "Institutions", icon: Building2, roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN"] },
   { label: "Routes", icon: Route, roles: ["SUPER_ADMIN", "DISPATCHER"] },
