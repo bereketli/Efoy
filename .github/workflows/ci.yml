@@ -27,7 +27,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
-          version: v2.4
+          version: latest # must be built with Go >= the go.mod version
       - name: Test
         run: go test -race -count=1 ./...
       - name: Build
