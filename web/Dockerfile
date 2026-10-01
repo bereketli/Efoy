@@ -24,6 +24,7 @@ WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
 COPY --from=build --chown=node:node /repo/web/.next/standalone ./
 COPY --from=build --chown=node:node /repo/web/.next/static ./.next/static
-USER node
+# Numeric so Kubernetes runAsNonRoot can verify it (the image's "node" user).
+USER 1000:1000
 EXPOSE 3000
 CMD ["node", "server.js"]
