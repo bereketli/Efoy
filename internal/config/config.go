@@ -62,14 +62,19 @@ type Redis struct {
 }
 
 type NATS struct {
-	URL string `koanf:"url"`
+	URL      string `koanf:"url"`
+	Replicas int    `koanf:"replicas"` // JetStream stream replicas: 1 on a single node, 3 in prod
 }
 
 type S3 struct {
-	Endpoint  string `koanf:"endpoint"`
+	Endpoint  string `koanf:"endpoint"` // host:port the services use
 	AccessKey string `koanf:"access_key"`
 	SecretKey string `koanf:"secret_key"`
 	UseSSL    bool   `koanf:"use_ssl"`
+	Region    string `koanf:"region"`
+	// PublicURL is the base URL apps and browsers use for pre-signed URLs.
+	PublicURL       string `koanf:"public_url"`
+	DocumentsBucket string `koanf:"documents_bucket"`
 }
 
 type OSRM struct {
@@ -123,6 +128,10 @@ func defaults() map[string]any {
 		"redis.db":               0,
 		"nats.url":               "nats://localhost:4222",
 		"s3.endpoint":            "localhost:9000",
+		"s3.region":              "us-east-1",
+		"s3.public_url":          "http://localhost:9000",
+		"s3.documents_bucket":    "efoy-documents",
+		"nats.replicas":          1,
 		"s3.use_ssl":             false,
 		"osrm.url":               "http://localhost:5000",
 		"auth.issuer":            "efoy",

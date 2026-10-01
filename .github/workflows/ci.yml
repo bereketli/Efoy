@@ -51,7 +51,7 @@ jobs:
           --health-timeout 5s
           --health-retries 20
     env:
-      DATABASE_URL: postgres://efoy:efoy@localhost:5432/efoy?sslmode=disable
+      EFOY_DATABASE__URL: postgres://efoy:efoy@localhost:5432/efoy?sslmode=disable
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5

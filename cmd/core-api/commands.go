@@ -16,6 +16,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
+	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"github.com/riverqueue/river/rivermigrate"
 
 	efoydb "github.com/blinge12/efoy/db"
 	"github.com/blinge12/efoy/internal/config"
@@ -53,7 +55,22 @@ func runMigrate(args []string) error {
 	}
 	switch cmd {
 	case "up":
-		return goose.UpContext(ctx, db, "migrations")
+		if err := goose.UpContext(ctx, db, "migrations"); err != nil {
+			return err
+		}
+		// River (the workers' job queue) keeps its own versioned tables.
+		migrator, err := rivermigrate.New(riverpgxv5.New(pool), nil)
+		if err != nil {
+			return err
+		}
+		res, err := migrator.Migrate(ctx, rivermigrate.DirectionUp, nil)
+		if err != nil {
+			return fmt.Errorf("river migrations: %w", err)
+		}
+		for _, v := range res.Versions {
+			fmt.Printf("river: applied migration %d\n", v.Version)
+		}
+		return nil
 	case "status":
 		return goose.StatusContext(ctx, db, "migrations")
 	default:

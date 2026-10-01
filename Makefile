@@ -75,14 +75,14 @@ db-wait:
 	@echo "waiting for postgres..."
 	@until docker compose exec -T postgres pg_isready -U efoy -d efoy >/dev/null 2>&1; do sleep 1; done
 
-migrate-up: ## Apply all pending migrations
-	$(GOOSE) up
+migrate-up: ## Apply all pending migrations (schema and River job queue tables)
+	EFOY_DATABASE__URL="$(DATABASE_URL)" go run ./cmd/core-api migrate up
 
 migrate-down: ## Roll back the latest migration
 	$(GOOSE) down
 
 migrate-status: ## Show migration status
-	$(GOOSE) status
+	EFOY_DATABASE__URL="$(DATABASE_URL)" go run ./cmd/core-api migrate status
 
 migrate-new: ## Create a migration: make migrate-new name=add_foo
 	go tool goose -dir db/migrations create $(name) sql
