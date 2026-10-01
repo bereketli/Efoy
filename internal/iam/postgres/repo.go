@@ -121,6 +121,17 @@ func (r *Repo) TouchLastLogin(ctx context.Context, userID uuid.UUID, at time.Tim
 	return nil
 }
 
+func (r *Repo) UpdateProfile(ctx context.Context, userID uuid.UUID, fullName string, fullNameAm *string, language string) error {
+	_, err := r.q.Exec(ctx, `
+		UPDATE users
+		   SET full_name = $2, full_name_am = $3, preferred_language = $4::text::app_language
+		 WHERE id = $1`, userID, fullName, fullNameAm, language)
+	if err != nil {
+		return fmt.Errorf("iam/postgres: update profile: %w", err)
+	}
+	return nil
+}
+
 // ---- roles and links ----
 
 func (r *Repo) ListGrants(ctx context.Context, userID uuid.UUID) ([]authz.Grant, error) {

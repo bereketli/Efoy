@@ -320,3 +320,44 @@ func TestCreateStaffValidation(t *testing.T) {
 	_, err = CreateStaff(ctx, e.repo, e.keys.TOTP, scoped)
 	assert.Error(t, err, "a scoped role needs a scope id")
 }
+
+func TestUpdateProfile(t *testing.T) {
+	e := newEnv(t)
+	ctx := context.Background()
+	pair := e.otpLogin(t, phone)
+	actor, err := e.keys.Tokens.Verify(pair.AccessToken)
+	require.NoError(t, err)
+
+	name, am, lang := "  Abebe Kebede ", "አበበ ከበደ", "en"
+	profile, err := e.svc.UpdateProfile(ctx, actor, ProfileUpdate{FullName: &name, FullNameAm: &am, PreferredLanguage: &lang})
+	require.NoError(t, err)
+	assert.Equal(t, "Abebe Kebede", profile.User.FullName)
+	assert.Equal(t, &am, profile.User.FullNameAm)
+	assert.Equal(t, "en", profile.User.PreferredLanguage)
+
+	profile, err = e.svc.UpdateProfile(ctx, actor, ProfileUpdate{ClearFullNameAm: true})
+	require.NoError(t, err)
+	assert.Nil(t, profile.User.FullNameAm)
+	assert.Equal(t, "Abebe Kebede", profile.User.FullName, "unset fields are kept")
+
+	empty, bad := " ", "fr"
+	_, err = e.svc.UpdateProfile(ctx, actor, ProfileUpdate{FullName: &empty})
+	assert.ErrorIs(t, err, ErrInvalidName)
+	_, err = e.svc.UpdateProfile(ctx, actor, ProfileUpdate{PreferredLanguage: &bad})
+	assert.ErrorIs(t, err, ErrInvalidLanguage)
+}
+
+func TestGrantRoleIsIdempotent(t *testing.T) {
+	e := newEnv(t)
+	ctx := context.Background()
+	user := e.otpLogin(t, phone).Profile.User.ID
+	driverRole := authz.Grant{Role: authz.RoleDriver, Scope: authz.ScopeGlobal}
+
+	require.NoError(t, e.svc.GrantRole(ctx, user, driverRole))
+	require.NoError(t, e.svc.GrantRole(ctx, user, driverRole))
+	grants, err := e.repo.ListGrants(ctx, user)
+	require.NoError(t, err)
+	assert.Equal(t, []authz.Grant{driverRole}, grants)
+
+	assert.Error(t, e.svc.GrantRole(ctx, user, authz.Grant{Role: authz.RoleDriver, Scope: authz.ScopeFleet}))
+}

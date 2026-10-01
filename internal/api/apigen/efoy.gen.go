@@ -16,6 +16,7 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
@@ -38,6 +39,132 @@ func (e DevicePlatform) Valid() bool {
 	case IOS:
 		return true
 	case WEB:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DocumentOwnerType.
+const (
+	DocumentOwnerTypeDRIVER  DocumentOwnerType = "DRIVER"
+	DocumentOwnerTypeVEHICLE DocumentOwnerType = "VEHICLE"
+)
+
+// Valid indicates whether the value is a known member of the DocumentOwnerType enum.
+func (e DocumentOwnerType) Valid() bool {
+	switch e {
+	case DocumentOwnerTypeDRIVER:
+		return true
+	case DocumentOwnerTypeVEHICLE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DocumentReviewDecision.
+const (
+	APPROVE DocumentReviewDecision = "APPROVE"
+	REJECT  DocumentReviewDecision = "REJECT"
+)
+
+// Valid indicates whether the value is a known member of the DocumentReviewDecision enum.
+func (e DocumentReviewDecision) Valid() bool {
+	switch e {
+	case APPROVE:
+		return true
+	case REJECT:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DocumentStatus.
+const (
+	DocumentStatusAPPROVED    DocumentStatus = "APPROVED"
+	DocumentStatusEXPIRED     DocumentStatus = "EXPIRED"
+	DocumentStatusPENDING     DocumentStatus = "PENDING"
+	DocumentStatusREJECTED    DocumentStatus = "REJECTED"
+	DocumentStatusUNDERREVIEW DocumentStatus = "UNDER_REVIEW"
+)
+
+// Valid indicates whether the value is a known member of the DocumentStatus enum.
+func (e DocumentStatus) Valid() bool {
+	switch e {
+	case DocumentStatusAPPROVED:
+		return true
+	case DocumentStatusEXPIRED:
+		return true
+	case DocumentStatusPENDING:
+		return true
+	case DocumentStatusREJECTED:
+		return true
+	case DocumentStatusUNDERREVIEW:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DocumentType.
+const (
+	ANNUALINSPECTION DocumentType = "ANNUAL_INSPECTION"
+	DRIVINGLICENCE   DocumentType = "DRIVING_LICENCE"
+	INSURANCE        DocumentType = "INSURANCE"
+	OTHER            DocumentType = "OTHER"
+	PHOTO            DocumentType = "PHOTO"
+	POLICECLEARANCE  DocumentType = "POLICE_CLEARANCE"
+	TINCERTIFICATE   DocumentType = "TIN_CERTIFICATE"
+	TRADELICENCE     DocumentType = "TRADE_LICENCE"
+	VEHICLELIBRE     DocumentType = "VEHICLE_LIBRE"
+	YANGOPROFILE     DocumentType = "YANGO_PROFILE"
+)
+
+// Valid indicates whether the value is a known member of the DocumentType enum.
+func (e DocumentType) Valid() bool {
+	switch e {
+	case ANNUALINSPECTION:
+		return true
+	case DRIVINGLICENCE:
+		return true
+	case INSURANCE:
+		return true
+	case OTHER:
+		return true
+	case PHOTO:
+		return true
+	case POLICECLEARANCE:
+		return true
+	case TINCERTIFICATE:
+		return true
+	case TRADELICENCE:
+		return true
+	case VEHICLELIBRE:
+		return true
+	case YANGOPROFILE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DriverSource.
+const (
+	INDEPENDENT DriverSource = "INDEPENDENT"
+	TAXI        DriverSource = "TAXI"
+	YANGO       DriverSource = "YANGO"
+)
+
+// Valid indicates whether the value is a known member of the DriverSource enum.
+func (e DriverSource) Valid() bool {
+	switch e {
+	case INDEPENDENT:
+		return true
+	case TAXI:
+		return true
+	case YANGO:
 		return true
 	default:
 		return false
@@ -161,39 +288,69 @@ func (e Language) Valid() bool {
 	}
 }
 
+// Defines values for OnboardingStatus.
+const (
+	OnboardingStatusACTIVE      OnboardingStatus = "ACTIVE"
+	OnboardingStatusAPPROVED    OnboardingStatus = "APPROVED"
+	OnboardingStatusPENDING     OnboardingStatus = "PENDING"
+	OnboardingStatusREJECTED    OnboardingStatus = "REJECTED"
+	OnboardingStatusSUSPENDED   OnboardingStatus = "SUSPENDED"
+	OnboardingStatusUNDERREVIEW OnboardingStatus = "UNDER_REVIEW"
+)
+
+// Valid indicates whether the value is a known member of the OnboardingStatus enum.
+func (e OnboardingStatus) Valid() bool {
+	switch e {
+	case OnboardingStatusACTIVE:
+		return true
+	case OnboardingStatusAPPROVED:
+		return true
+	case OnboardingStatusPENDING:
+		return true
+	case OnboardingStatusREJECTED:
+		return true
+	case OnboardingStatusSUSPENDED:
+		return true
+	case OnboardingStatusUNDERREVIEW:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for Role.
 const (
-	CIVILSERVANTRIDER Role = "CIVIL_SERVANT_RIDER"
-	DISPATCHER        Role = "DISPATCHER"
-	DRIVER            Role = "DRIVER"
-	FLEETOWNER        Role = "FLEET_OWNER"
-	GUARDIAN          Role = "GUARDIAN"
-	INSTITUTIONADMIN  Role = "INSTITUTION_ADMIN"
-	STUDENTRIDER      Role = "STUDENT_RIDER"
-	SUPERADMIN        Role = "SUPER_ADMIN"
-	SUPPORTAGENT      Role = "SUPPORT_AGENT"
+	RoleCIVILSERVANTRIDER Role = "CIVIL_SERVANT_RIDER"
+	RoleDISPATCHER        Role = "DISPATCHER"
+	RoleDRIVER            Role = "DRIVER"
+	RoleFLEETOWNER        Role = "FLEET_OWNER"
+	RoleGUARDIAN          Role = "GUARDIAN"
+	RoleINSTITUTIONADMIN  Role = "INSTITUTION_ADMIN"
+	RoleSTUDENTRIDER      Role = "STUDENT_RIDER"
+	RoleSUPERADMIN        Role = "SUPER_ADMIN"
+	RoleSUPPORTAGENT      Role = "SUPPORT_AGENT"
 )
 
 // Valid indicates whether the value is a known member of the Role enum.
 func (e Role) Valid() bool {
 	switch e {
-	case CIVILSERVANTRIDER:
+	case RoleCIVILSERVANTRIDER:
 		return true
-	case DISPATCHER:
+	case RoleDISPATCHER:
 		return true
-	case DRIVER:
+	case RoleDRIVER:
 		return true
-	case FLEETOWNER:
+	case RoleFLEETOWNER:
 		return true
-	case GUARDIAN:
+	case RoleGUARDIAN:
 		return true
-	case INSTITUTIONADMIN:
+	case RoleINSTITUTIONADMIN:
 		return true
-	case STUDENTRIDER:
+	case RoleSTUDENTRIDER:
 		return true
-	case SUPERADMIN:
+	case RoleSUPERADMIN:
 		return true
-	case SUPPORTAGENT:
+	case RoleSUPPORTAGENT:
 		return true
 	default:
 		return false
@@ -239,6 +396,54 @@ func (e TokenPairTokenType) Valid() bool {
 	}
 }
 
+// Defines values for UploadUrlRequestContentType.
+const (
+	Applicationpdf UploadUrlRequestContentType = "application/pdf"
+	Imagejpeg      UploadUrlRequestContentType = "image/jpeg"
+	Imagepng       UploadUrlRequestContentType = "image/png"
+	Imagewebp      UploadUrlRequestContentType = "image/webp"
+)
+
+// Valid indicates whether the value is a known member of the UploadUrlRequestContentType enum.
+func (e UploadUrlRequestContentType) Valid() bool {
+	switch e {
+	case Applicationpdf:
+		return true
+	case Imagejpeg:
+		return true
+	case Imagepng:
+		return true
+	case Imagewebp:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VehicleClass.
+const (
+	MIDIBUS VehicleClass = "MIDIBUS"
+	MINIBUS VehicleClass = "MINIBUS"
+	SEDAN   VehicleClass = "SEDAN"
+	SUV     VehicleClass = "SUV"
+)
+
+// Valid indicates whether the value is a known member of the VehicleClass enum.
+func (e VehicleClass) Valid() bool {
+	switch e {
+	case MIDIBUS:
+		return true
+	case MINIBUS:
+		return true
+	case SEDAN:
+		return true
+	case SUV:
+		return true
+	default:
+		return false
+	}
+}
+
 // DeviceInfo defines model for DeviceInfo.
 type DeviceInfo struct {
 	AppVersion *string        `json:"app_version,omitempty"`
@@ -249,6 +454,114 @@ type DeviceInfo struct {
 
 // DevicePlatform defines model for DevicePlatform.
 type DevicePlatform string
+
+// Document defines model for Document.
+type Document struct {
+	ContentType string    `json:"content_type"`
+	CreatedAt   time.Time `json:"created_at"`
+	DocNumber   *string   `json:"doc_number,omitempty"`
+
+	// DocType DRIVER: DRIVING_LICENCE, POLICE_CLEARANCE, PHOTO, YANGO_PROFILE, OTHER.
+	// VEHICLE: VEHICLE_LIBRE, INSURANCE, ANNUAL_INSPECTION, PHOTO, OTHER.
+	DocType   DocumentType        `json:"doc_type"`
+	ExpiresOn *openapi_types.Date `json:"expires_on,omitempty"`
+	Id        openapi_types.UUID  `json:"id"`
+	IssuedOn  *openapi_types.Date `json:"issued_on,omitempty"`
+	OwnerId   openapi_types.UUID  `json:"owner_id"`
+
+	// OwnerLabel Driver name or vehicle plate.
+	OwnerLabel      string            `json:"owner_label"`
+	OwnerType       DocumentOwnerType `json:"owner_type"`
+	RejectionReason *string           `json:"rejection_reason,omitempty"`
+	ReviewedAt      *time.Time        `json:"reviewed_at,omitempty"`
+	Status          DocumentStatus    `json:"status"`
+
+	// ViewUrl Short-lived URL to the file (admin endpoints only).
+	ViewUrl *string `json:"view_url,omitempty"`
+}
+
+// DocumentInput defines model for DocumentInput.
+type DocumentInput struct {
+	DocNumber *string `json:"doc_number,omitempty"`
+
+	// DocType DRIVER: DRIVING_LICENCE, POLICE_CLEARANCE, PHOTO, YANGO_PROFILE, OTHER.
+	// VEHICLE: VEHICLE_LIBRE, INSURANCE, ANNUAL_INSPECTION, PHOTO, OTHER.
+	DocType DocumentType `json:"doc_type"`
+
+	// ExpiresOn Required for DRIVING_LICENCE, INSURANCE and ANNUAL_INSPECTION; must be in the future.
+	ExpiresOn *openapi_types.Date `json:"expires_on,omitempty"`
+	FileKey   string              `json:"file_key"`
+	IssuedOn  *openapi_types.Date `json:"issued_on,omitempty"`
+	OwnerId   openapi_types.UUID  `json:"owner_id"`
+	OwnerType DocumentOwnerType   `json:"owner_type"`
+}
+
+// DocumentOwnerType defines model for DocumentOwnerType.
+type DocumentOwnerType string
+
+// DocumentPage defines model for DocumentPage.
+type DocumentPage struct {
+	Items      []Document `json:"items"`
+	NextCursor *string    `json:"next_cursor,omitempty"`
+}
+
+// DocumentReview defines model for DocumentReview.
+type DocumentReview struct {
+	Decision DocumentReviewDecision `json:"decision"`
+
+	// Reason Required when rejecting; shown to the driver.
+	Reason *string `json:"reason,omitempty"`
+}
+
+// DocumentReviewDecision defines model for DocumentReview.Decision.
+type DocumentReviewDecision string
+
+// DocumentStatus defines model for DocumentStatus.
+type DocumentStatus string
+
+// DocumentType DRIVER: DRIVING_LICENCE, POLICE_CLEARANCE, PHOTO, YANGO_PROFILE, OTHER.
+// VEHICLE: VEHICLE_LIBRE, INSURANCE, ANNUAL_INSPECTION, PHOTO, OTHER.
+type DocumentType string
+
+// Driver defines model for Driver.
+type Driver struct {
+	CreatedAt             time.Time          `json:"created_at"`
+	EmergencyContactName  *string            `json:"emergency_contact_name,omitempty"`
+	EmergencyContactPhone *string            `json:"emergency_contact_phone,omitempty"`
+	FullName              string             `json:"full_name"`
+	Id                    openapi_types.UUID `json:"id"`
+	LicenceCategory       string             `json:"licence_category"`
+	LicenceExpiresOn      openapi_types.Date `json:"licence_expires_on"`
+	LicenceNumber         string             `json:"licence_number"`
+	PhoneE164             *string            `json:"phone_e164,omitempty"`
+	Source                DriverSource       `json:"source"`
+	Status                OnboardingStatus   `json:"status"`
+	StudentCertified      bool               `json:"student_certified"`
+	UserId                openapi_types.UUID `json:"user_id"`
+}
+
+// DriverInput defines model for DriverInput.
+type DriverInput struct {
+	EmergencyContactName *string `json:"emergency_contact_name,omitempty"`
+
+	// EmergencyContactPhone Example: +251911234567
+	EmergencyContactPhone *PhoneE164         `json:"emergency_contact_phone,omitempty"`
+	LicenceCategory       string             `json:"licence_category"`
+	LicenceExpiresOn      openapi_types.Date `json:"licence_expires_on"`
+	LicenceNumber         string             `json:"licence_number"`
+	Source                DriverSource       `json:"source"`
+}
+
+// DriverProfile defines model for DriverProfile.
+type DriverProfile struct {
+	// Documents Documents of the driver and of their vehicles, newest first.
+	Documents []Document `json:"documents"`
+	Driver    Driver     `json:"driver"`
+	Vehicles  []Vehicle  `json:"vehicles"`
+}
+
+// DriverSource defines model for DriverSource.
+type DriverSource string
 
 // HealthStatus defines model for HealthStatus.
 type HealthStatus struct {
@@ -316,6 +629,16 @@ type Me struct {
 	PreferredLanguage Language    `json:"preferred_language"`
 	Roles             []RoleGrant `json:"roles"`
 }
+
+// MeUpdate defines model for MeUpdate.
+type MeUpdate struct {
+	FullName          *string   `json:"full_name,omitempty"`
+	FullNameAm        *string   `json:"full_name_am,omitempty"`
+	PreferredLanguage *Language `json:"preferred_language,omitempty"`
+}
+
+// OnboardingStatus defines model for OnboardingStatus.
+type OnboardingStatus string
 
 // OtpRequest defines model for OtpRequest.
 type OtpRequest struct {
@@ -393,11 +716,87 @@ type TokenPair struct {
 // TokenPairTokenType defines model for TokenPair.TokenType.
 type TokenPairTokenType string
 
+// UploadUrl defines model for UploadUrl.
+type UploadUrl struct {
+	ExpiresAt time.Time `json:"expires_at"`
+	FileKey   string    `json:"file_key"`
+
+	// MaxBytes Example: 10485760
+	MaxBytes  int    `json:"max_bytes"`
+	UploadUrl string `json:"upload_url"`
+}
+
+// UploadUrlRequest defines model for UploadUrlRequest.
+type UploadUrlRequest struct {
+	ContentType UploadUrlRequestContentType `json:"content_type"`
+
+	// DocType DRIVER: DRIVING_LICENCE, POLICE_CLEARANCE, PHOTO, YANGO_PROFILE, OTHER.
+	// VEHICLE: VEHICLE_LIBRE, INSURANCE, ANNUAL_INSPECTION, PHOTO, OTHER.
+	DocType   DocumentType       `json:"doc_type"`
+	OwnerId   openapi_types.UUID `json:"owner_id"`
+	OwnerType DocumentOwnerType  `json:"owner_type"`
+}
+
+// UploadUrlRequestContentType defines model for UploadUrlRequest.ContentType.
+type UploadUrlRequestContentType string
+
+// Vehicle defines model for Vehicle.
+type Vehicle struct {
+	Colour         string              `json:"colour"`
+	CreatedAt      time.Time           `json:"created_at"`
+	FleetOwnerId   *openapi_types.UUID `json:"fleet_owner_id,omitempty"`
+	HasFirstAid    bool                `json:"has_first_aid"`
+	HasSeatbelts   bool                `json:"has_seatbelts"`
+	Id             openapi_types.UUID  `json:"id"`
+	Make           string              `json:"make"`
+	Model          string              `json:"model"`
+	OwnerDriverId  *openapi_types.UUID `json:"owner_driver_id,omitempty"`
+	PassengerSeats int                 `json:"passenger_seats"`
+	PlateNumber    string              `json:"plate_number"`
+	Status         OnboardingStatus    `json:"status"`
+	VehicleClass   VehicleClass        `json:"vehicle_class"`
+	Year           int                 `json:"year"`
+}
+
+// VehicleClass defines model for VehicleClass.
+type VehicleClass string
+
+// VehicleInput defines model for VehicleInput.
+type VehicleInput struct {
+	Colour         string       `json:"colour"`
+	HasFirstAid    *bool        `json:"has_first_aid,omitempty"`
+	HasSeatbelts   *bool        `json:"has_seatbelts,omitempty"`
+	Make           string       `json:"make"`
+	Model          string       `json:"model"`
+	PassengerSeats int          `json:"passenger_seats"`
+	PlateNumber    string       `json:"plate_number"`
+	VehicleClass   VehicleClass `json:"vehicle_class"`
+	Year           int          `json:"year"`
+}
+
 // AcceptLanguage defines model for AcceptLanguage.
 type AcceptLanguage = Language
 
+// Cursor defines model for Cursor.
+type Cursor = string
+
+// ID defines model for ID.
+type ID = openapi_types.UUID
+
+// Limit defines model for Limit.
+type Limit = int
+
 // BadRequest RFC 9457 problem details.
 type BadRequest = Problem
+
+// Conflict RFC 9457 problem details.
+type Conflict = Problem
+
+// Forbidden RFC 9457 problem details.
+type Forbidden = Problem
+
+// NotFound RFC 9457 problem details.
+type NotFound = Problem
 
 // TooManyRequests RFC 9457 problem details.
 type TooManyRequests = Problem
@@ -405,10 +804,23 @@ type TooManyRequests = Problem
 // Unauthorized RFC 9457 problem details.
 type Unauthorized = Problem
 
+// ListDocumentsForReviewParams defines parameters for ListDocumentsForReview.
+type ListDocumentsForReviewParams struct {
+	// Status Defaults to PENDING and UNDER_REVIEW.
+	Status *[]DocumentStatus `form:"status,omitempty" json:"status,omitempty"`
+	Limit  *Limit            `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Cursor next_cursor from the previous page.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+}
+
 // RequestOtpParams defines parameters for RequestOtp.
 type RequestOtpParams struct {
 	AcceptLanguage *AcceptLanguage `json:"Accept-Language,omitempty"`
 }
+
+// ReviewDocumentJSONRequestBody defines body for ReviewDocument for application/json ContentType.
+type ReviewDocumentJSONRequestBody = DocumentReview
 
 // LoginJSONRequestBody defines body for Login for application/json ContentType.
 type LoginJSONRequestBody = LoginRequest
@@ -425,6 +837,21 @@ type VerifyOtpJSONRequestBody = OtpVerify
 // RefreshTokensJSONRequestBody defines body for RefreshTokens for application/json ContentType.
 type RefreshTokensJSONRequestBody = RefreshRequest
 
+// SubmitDocumentJSONRequestBody defines body for SubmitDocument for application/json ContentType.
+type SubmitDocumentJSONRequestBody = DocumentInput
+
+// CreateDocumentUploadUrlJSONRequestBody defines body for CreateDocumentUploadUrl for application/json ContentType.
+type CreateDocumentUploadUrlJSONRequestBody = UploadUrlRequest
+
+// RegisterDriverJSONRequestBody defines body for RegisterDriver for application/json ContentType.
+type RegisterDriverJSONRequestBody = DriverInput
+
+// UpdateMeJSONRequestBody defines body for UpdateMe for application/json ContentType.
+type UpdateMeJSONRequestBody = MeUpdate
+
+// RegisterVehicleJSONRequestBody defines body for RegisterVehicle for application/json ContentType.
+type RegisterVehicleJSONRequestBody = VehicleInput
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// GetJwks Public keys that verify access tokens (Ed25519, JWKS)
@@ -436,6 +863,15 @@ type ServerInterface interface {
 	// GetReadyz Readiness probe (checks dependencies such as Postgres)
 	// (GET /readyz)
 	GetReadyz(w http.ResponseWriter, r *http.Request)
+	// ListDocumentsForReview Document review queue, oldest first
+	// (GET /v1/admin/documents)
+	ListDocumentsForReview(w http.ResponseWriter, r *http.Request, params ListDocumentsForReviewParams)
+	// GetDocumentForReview One document with a short-lived URL to view the file
+	// (GET /v1/admin/documents/{id})
+	GetDocumentForReview(w http.ResponseWriter, r *http.Request, id ID)
+	// ReviewDocument Approve or reject a document (super admin, dispatcher)
+	// (POST /v1/admin/documents/{id}/review)
+	ReviewDocument(w http.ResponseWriter, r *http.Request, id ID)
 	// Login Staff login for the web portals (email + password + TOTP)
 	// (POST /v1/auth/login)
 	Login(w http.ResponseWriter, r *http.Request)
@@ -451,9 +887,30 @@ type ServerInterface interface {
 	// RefreshTokens Rotate a refresh token
 	// (POST /v1/auth/refresh)
 	RefreshTokens(w http.ResponseWriter, r *http.Request)
+	// SubmitDocument Record an uploaded document for review (FR-DRV-3)
+	// (POST /v1/documents)
+	SubmitDocument(w http.ResponseWriter, r *http.Request)
+	// CreateDocumentUploadUrl Get a pre-signed URL to upload a document file (FR-DRV-3)
+	// (POST /v1/documents/upload-url)
+	CreateDocumentUploadUrl(w http.ResponseWriter, r *http.Request)
+	// RegisterDriver Register the current user as a driver (FR-DRV-1)
+	// (POST /v1/drivers)
+	RegisterDriver(w http.ResponseWriter, r *http.Request)
+	// GetMyDriver The current user's driver profile with vehicles and documents
+	// (GET /v1/drivers/me)
+	GetMyDriver(w http.ResponseWriter, r *http.Request)
+	// GetDriver A driver profile (the driver, dispatchers, support and super admins)
+	// (GET /v1/drivers/{id})
+	GetDriver(w http.ResponseWriter, r *http.Request, id ID)
 	// GetMe Current user's profile, roles and linked riders
 	// (GET /v1/me)
 	GetMe(w http.ResponseWriter, r *http.Request)
+	// UpdateMe Update the current user's name and language
+	// (PATCH /v1/me)
+	UpdateMe(w http.ResponseWriter, r *http.Request)
+	// RegisterVehicle Register a vehicle owned by the current driver (FR-DRV-2)
+	// (POST /v1/vehicles)
+	RegisterVehicle(w http.ResponseWriter, r *http.Request)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -475,6 +932,24 @@ func (_ Unimplemented) GetHealthz(w http.ResponseWriter, r *http.Request) {
 // GetReadyz Readiness probe (checks dependencies such as Postgres)
 // (GET /readyz)
 func (_ Unimplemented) GetReadyz(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListDocumentsForReview Document review queue, oldest first
+// (GET /v1/admin/documents)
+func (_ Unimplemented) ListDocumentsForReview(w http.ResponseWriter, r *http.Request, params ListDocumentsForReviewParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetDocumentForReview One document with a short-lived URL to view the file
+// (GET /v1/admin/documents/{id})
+func (_ Unimplemented) GetDocumentForReview(w http.ResponseWriter, r *http.Request, id ID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ReviewDocument Approve or reject a document (super admin, dispatcher)
+// (POST /v1/admin/documents/{id}/review)
+func (_ Unimplemented) ReviewDocument(w http.ResponseWriter, r *http.Request, id ID) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -508,9 +983,51 @@ func (_ Unimplemented) RefreshTokens(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// SubmitDocument Record an uploaded document for review (FR-DRV-3)
+// (POST /v1/documents)
+func (_ Unimplemented) SubmitDocument(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateDocumentUploadUrl Get a pre-signed URL to upload a document file (FR-DRV-3)
+// (POST /v1/documents/upload-url)
+func (_ Unimplemented) CreateDocumentUploadUrl(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RegisterDriver Register the current user as a driver (FR-DRV-1)
+// (POST /v1/drivers)
+func (_ Unimplemented) RegisterDriver(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetMyDriver The current user's driver profile with vehicles and documents
+// (GET /v1/drivers/me)
+func (_ Unimplemented) GetMyDriver(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetDriver A driver profile (the driver, dispatchers, support and super admins)
+// (GET /v1/drivers/{id})
+func (_ Unimplemented) GetDriver(w http.ResponseWriter, r *http.Request, id ID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // GetMe Current user's profile, roles and linked riders
 // (GET /v1/me)
 func (_ Unimplemented) GetMe(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateMe Update the current user's name and language
+// (PATCH /v1/me)
+func (_ Unimplemented) UpdateMe(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RegisterVehicle Register a vehicle owned by the current driver (FR-DRV-2)
+// (POST /v1/vehicles)
+func (_ Unimplemented) RegisterVehicle(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -556,6 +1073,117 @@ func (siw *ServerInterfaceWrapper) GetReadyz(w http.ResponseWriter, r *http.Requ
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetReadyz(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListDocumentsForReview operation middleware
+func (siw *ServerInterfaceWrapper) ListDocumentsForReview(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListDocumentsForReviewParams
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "status", r.URL.Query(), &params.Status, runtime.BindQueryParameterOptions{Type: "array", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "status"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListDocumentsForReview(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetDocumentForReview operation middleware
+func (siw *ServerInterfaceWrapper) GetDocumentForReview(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id ID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetDocumentForReview(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ReviewDocument operation middleware
+func (siw *ServerInterfaceWrapper) ReviewDocument(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id ID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ReviewDocument(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -662,11 +1290,121 @@ func (siw *ServerInterfaceWrapper) RefreshTokens(w http.ResponseWriter, r *http.
 	handler.ServeHTTP(w, r)
 }
 
+// SubmitDocument operation middleware
+func (siw *ServerInterfaceWrapper) SubmitDocument(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.SubmitDocument(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateDocumentUploadUrl operation middleware
+func (siw *ServerInterfaceWrapper) CreateDocumentUploadUrl(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateDocumentUploadUrl(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RegisterDriver operation middleware
+func (siw *ServerInterfaceWrapper) RegisterDriver(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RegisterDriver(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetMyDriver operation middleware
+func (siw *ServerInterfaceWrapper) GetMyDriver(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetMyDriver(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetDriver operation middleware
+func (siw *ServerInterfaceWrapper) GetDriver(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id ID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetDriver(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetMe operation middleware
 func (siw *ServerInterfaceWrapper) GetMe(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetMe(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateMe operation middleware
+func (siw *ServerInterfaceWrapper) UpdateMe(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateMe(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RegisterVehicle operation middleware
+func (siw *ServerInterfaceWrapper) RegisterVehicle(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RegisterVehicle(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -816,11 +1554,47 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/v1/me", wrapper.GetMe)
 	})
+	r.Group(func(r chi.Router) {
+		r.Patch(options.BaseURL+"/v1/me", wrapper.UpdateMe)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/v1/drivers", wrapper.RegisterDriver)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/v1/drivers/me", wrapper.GetMyDriver)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/v1/drivers/{id}", wrapper.GetDriver)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/v1/vehicles", wrapper.RegisterVehicle)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/v1/documents/upload-url", wrapper.CreateDocumentUploadUrl)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/v1/documents", wrapper.SubmitDocument)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/v1/admin/documents", wrapper.ListDocumentsForReview)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/v1/admin/documents/{id}", wrapper.GetDocumentForReview)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/v1/admin/documents/{id}/review", wrapper.ReviewDocument)
+	})
 
 	return r
 }
 
 type BadRequestApplicationProblemPlusJSONResponse Problem
+
+type ConflictApplicationProblemPlusJSONResponse Problem
+
+type ForbiddenApplicationProblemPlusJSONResponse Problem
+
+type NotFoundApplicationProblemPlusJSONResponse Problem
 
 type TooManyRequestsResponseHeaders struct {
 	RetryAfter *int
@@ -906,6 +1680,233 @@ func (response GetReadyz503JSONResponse) VisitGetReadyzResponse(w http.ResponseW
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListDocumentsForReviewRequestObject struct {
+	Params ListDocumentsForReviewParams
+}
+
+type ListDocumentsForReviewResponseObject interface {
+	VisitListDocumentsForReviewResponse(w http.ResponseWriter) error
+}
+
+type ListDocumentsForReview200JSONResponse DocumentPage
+
+func (response ListDocumentsForReview200JSONResponse) VisitListDocumentsForReviewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListDocumentsForReview401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response ListDocumentsForReview401ApplicationProblemPlusJSONResponse) VisitListDocumentsForReviewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListDocumentsForReview403ApplicationProblemPlusJSONResponse struct {
+	ForbiddenApplicationProblemPlusJSONResponse
+}
+
+func (response ListDocumentsForReview403ApplicationProblemPlusJSONResponse) VisitListDocumentsForReviewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetDocumentForReviewRequestObject struct {
+	Id ID `json:"id"`
+}
+
+type GetDocumentForReviewResponseObject interface {
+	VisitGetDocumentForReviewResponse(w http.ResponseWriter) error
+}
+
+type GetDocumentForReview200JSONResponse Document
+
+func (response GetDocumentForReview200JSONResponse) VisitGetDocumentForReviewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetDocumentForReview401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response GetDocumentForReview401ApplicationProblemPlusJSONResponse) VisitGetDocumentForReviewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetDocumentForReview403ApplicationProblemPlusJSONResponse struct {
+	ForbiddenApplicationProblemPlusJSONResponse
+}
+
+func (response GetDocumentForReview403ApplicationProblemPlusJSONResponse) VisitGetDocumentForReviewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetDocumentForReview404ApplicationProblemPlusJSONResponse struct {
+	NotFoundApplicationProblemPlusJSONResponse
+}
+
+func (response GetDocumentForReview404ApplicationProblemPlusJSONResponse) VisitGetDocumentForReviewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ReviewDocumentRequestObject struct {
+	Id   ID `json:"id"`
+	Body *ReviewDocumentJSONRequestBody
+}
+
+type ReviewDocumentResponseObject interface {
+	VisitReviewDocumentResponse(w http.ResponseWriter) error
+}
+
+type ReviewDocument200JSONResponse Document
+
+func (response ReviewDocument200JSONResponse) VisitReviewDocumentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ReviewDocument400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response ReviewDocument400ApplicationProblemPlusJSONResponse) VisitReviewDocumentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ReviewDocument401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response ReviewDocument401ApplicationProblemPlusJSONResponse) VisitReviewDocumentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ReviewDocument403ApplicationProblemPlusJSONResponse struct {
+	ForbiddenApplicationProblemPlusJSONResponse
+}
+
+func (response ReviewDocument403ApplicationProblemPlusJSONResponse) VisitReviewDocumentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ReviewDocument404ApplicationProblemPlusJSONResponse struct {
+	NotFoundApplicationProblemPlusJSONResponse
+}
+
+func (response ReviewDocument404ApplicationProblemPlusJSONResponse) VisitReviewDocumentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ReviewDocument409ApplicationProblemPlusJSONResponse struct {
+	ConflictApplicationProblemPlusJSONResponse
+}
+
+func (response ReviewDocument409ApplicationProblemPlusJSONResponse) VisitReviewDocumentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(409)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -1184,6 +2185,339 @@ func (response RefreshTokens401ApplicationProblemPlusJSONResponse) VisitRefreshT
 	return err
 }
 
+type SubmitDocumentRequestObject struct {
+	Body *SubmitDocumentJSONRequestBody
+}
+
+type SubmitDocumentResponseObject interface {
+	VisitSubmitDocumentResponse(w http.ResponseWriter) error
+}
+
+type SubmitDocument201JSONResponse Document
+
+func (response SubmitDocument201JSONResponse) VisitSubmitDocumentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type SubmitDocument400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response SubmitDocument400ApplicationProblemPlusJSONResponse) VisitSubmitDocumentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type SubmitDocument401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response SubmitDocument401ApplicationProblemPlusJSONResponse) VisitSubmitDocumentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type SubmitDocument403ApplicationProblemPlusJSONResponse struct {
+	ForbiddenApplicationProblemPlusJSONResponse
+}
+
+func (response SubmitDocument403ApplicationProblemPlusJSONResponse) VisitSubmitDocumentResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateDocumentUploadUrlRequestObject struct {
+	Body *CreateDocumentUploadUrlJSONRequestBody
+}
+
+type CreateDocumentUploadUrlResponseObject interface {
+	VisitCreateDocumentUploadUrlResponse(w http.ResponseWriter) error
+}
+
+type CreateDocumentUploadUrl201JSONResponse UploadUrl
+
+func (response CreateDocumentUploadUrl201JSONResponse) VisitCreateDocumentUploadUrlResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateDocumentUploadUrl400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response CreateDocumentUploadUrl400ApplicationProblemPlusJSONResponse) VisitCreateDocumentUploadUrlResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateDocumentUploadUrl401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response CreateDocumentUploadUrl401ApplicationProblemPlusJSONResponse) VisitCreateDocumentUploadUrlResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateDocumentUploadUrl403ApplicationProblemPlusJSONResponse struct {
+	ForbiddenApplicationProblemPlusJSONResponse
+}
+
+func (response CreateDocumentUploadUrl403ApplicationProblemPlusJSONResponse) VisitCreateDocumentUploadUrlResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RegisterDriverRequestObject struct {
+	Body *RegisterDriverJSONRequestBody
+}
+
+type RegisterDriverResponseObject interface {
+	VisitRegisterDriverResponse(w http.ResponseWriter) error
+}
+
+type RegisterDriver201JSONResponse Driver
+
+func (response RegisterDriver201JSONResponse) VisitRegisterDriverResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RegisterDriver400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response RegisterDriver400ApplicationProblemPlusJSONResponse) VisitRegisterDriverResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RegisterDriver401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response RegisterDriver401ApplicationProblemPlusJSONResponse) VisitRegisterDriverResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RegisterDriver409ApplicationProblemPlusJSONResponse struct {
+	ConflictApplicationProblemPlusJSONResponse
+}
+
+func (response RegisterDriver409ApplicationProblemPlusJSONResponse) VisitRegisterDriverResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMyDriverRequestObject struct {
+}
+
+type GetMyDriverResponseObject interface {
+	VisitGetMyDriverResponse(w http.ResponseWriter) error
+}
+
+type GetMyDriver200JSONResponse DriverProfile
+
+func (response GetMyDriver200JSONResponse) VisitGetMyDriverResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMyDriver401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response GetMyDriver401ApplicationProblemPlusJSONResponse) VisitGetMyDriverResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMyDriver404ApplicationProblemPlusJSONResponse struct {
+	NotFoundApplicationProblemPlusJSONResponse
+}
+
+func (response GetMyDriver404ApplicationProblemPlusJSONResponse) VisitGetMyDriverResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetDriverRequestObject struct {
+	Id ID `json:"id"`
+}
+
+type GetDriverResponseObject interface {
+	VisitGetDriverResponse(w http.ResponseWriter) error
+}
+
+type GetDriver200JSONResponse DriverProfile
+
+func (response GetDriver200JSONResponse) VisitGetDriverResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetDriver401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response GetDriver401ApplicationProblemPlusJSONResponse) VisitGetDriverResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetDriver403ApplicationProblemPlusJSONResponse struct {
+	ForbiddenApplicationProblemPlusJSONResponse
+}
+
+func (response GetDriver403ApplicationProblemPlusJSONResponse) VisitGetDriverResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetDriver404ApplicationProblemPlusJSONResponse struct {
+	NotFoundApplicationProblemPlusJSONResponse
+}
+
+func (response GetDriver404ApplicationProblemPlusJSONResponse) VisitGetDriverResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetMeRequestObject struct {
 }
 
@@ -1221,6 +2555,146 @@ func (response GetMe401ApplicationProblemPlusJSONResponse) VisitGetMeResponse(w 
 	return err
 }
 
+type UpdateMeRequestObject struct {
+	Body *UpdateMeJSONRequestBody
+}
+
+type UpdateMeResponseObject interface {
+	VisitUpdateMeResponse(w http.ResponseWriter) error
+}
+
+type UpdateMe200JSONResponse Me
+
+func (response UpdateMe200JSONResponse) VisitUpdateMeResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateMe400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response UpdateMe400ApplicationProblemPlusJSONResponse) VisitUpdateMeResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateMe401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response UpdateMe401ApplicationProblemPlusJSONResponse) VisitUpdateMeResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RegisterVehicleRequestObject struct {
+	Body *RegisterVehicleJSONRequestBody
+}
+
+type RegisterVehicleResponseObject interface {
+	VisitRegisterVehicleResponse(w http.ResponseWriter) error
+}
+
+type RegisterVehicle201JSONResponse Vehicle
+
+func (response RegisterVehicle201JSONResponse) VisitRegisterVehicleResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RegisterVehicle400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response RegisterVehicle400ApplicationProblemPlusJSONResponse) VisitRegisterVehicleResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RegisterVehicle401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response RegisterVehicle401ApplicationProblemPlusJSONResponse) VisitRegisterVehicleResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RegisterVehicle403ApplicationProblemPlusJSONResponse struct {
+	ForbiddenApplicationProblemPlusJSONResponse
+}
+
+func (response RegisterVehicle403ApplicationProblemPlusJSONResponse) VisitRegisterVehicleResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RegisterVehicle409ApplicationProblemPlusJSONResponse struct {
+	ConflictApplicationProblemPlusJSONResponse
+}
+
+func (response RegisterVehicle409ApplicationProblemPlusJSONResponse) VisitRegisterVehicleResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// GetJwks Public keys that verify access tokens (Ed25519, JWKS)
@@ -1232,6 +2706,15 @@ type StrictServerInterface interface {
 	// GetReadyz Readiness probe (checks dependencies such as Postgres)
 	// (GET /readyz)
 	GetReadyz(ctx context.Context, request GetReadyzRequestObject) (GetReadyzResponseObject, error)
+	// ListDocumentsForReview Document review queue, oldest first
+	// (GET /v1/admin/documents)
+	ListDocumentsForReview(ctx context.Context, request ListDocumentsForReviewRequestObject) (ListDocumentsForReviewResponseObject, error)
+	// GetDocumentForReview One document with a short-lived URL to view the file
+	// (GET /v1/admin/documents/{id})
+	GetDocumentForReview(ctx context.Context, request GetDocumentForReviewRequestObject) (GetDocumentForReviewResponseObject, error)
+	// ReviewDocument Approve or reject a document (super admin, dispatcher)
+	// (POST /v1/admin/documents/{id}/review)
+	ReviewDocument(ctx context.Context, request ReviewDocumentRequestObject) (ReviewDocumentResponseObject, error)
 	// Login Staff login for the web portals (email + password + TOTP)
 	// (POST /v1/auth/login)
 	Login(ctx context.Context, request LoginRequestObject) (LoginResponseObject, error)
@@ -1247,9 +2730,30 @@ type StrictServerInterface interface {
 	// RefreshTokens Rotate a refresh token
 	// (POST /v1/auth/refresh)
 	RefreshTokens(ctx context.Context, request RefreshTokensRequestObject) (RefreshTokensResponseObject, error)
+	// SubmitDocument Record an uploaded document for review (FR-DRV-3)
+	// (POST /v1/documents)
+	SubmitDocument(ctx context.Context, request SubmitDocumentRequestObject) (SubmitDocumentResponseObject, error)
+	// CreateDocumentUploadUrl Get a pre-signed URL to upload a document file (FR-DRV-3)
+	// (POST /v1/documents/upload-url)
+	CreateDocumentUploadUrl(ctx context.Context, request CreateDocumentUploadUrlRequestObject) (CreateDocumentUploadUrlResponseObject, error)
+	// RegisterDriver Register the current user as a driver (FR-DRV-1)
+	// (POST /v1/drivers)
+	RegisterDriver(ctx context.Context, request RegisterDriverRequestObject) (RegisterDriverResponseObject, error)
+	// GetMyDriver The current user's driver profile with vehicles and documents
+	// (GET /v1/drivers/me)
+	GetMyDriver(ctx context.Context, request GetMyDriverRequestObject) (GetMyDriverResponseObject, error)
+	// GetDriver A driver profile (the driver, dispatchers, support and super admins)
+	// (GET /v1/drivers/{id})
+	GetDriver(ctx context.Context, request GetDriverRequestObject) (GetDriverResponseObject, error)
 	// GetMe Current user's profile, roles and linked riders
 	// (GET /v1/me)
 	GetMe(ctx context.Context, request GetMeRequestObject) (GetMeResponseObject, error)
+	// UpdateMe Update the current user's name and language
+	// (PATCH /v1/me)
+	UpdateMe(ctx context.Context, request UpdateMeRequestObject) (UpdateMeResponseObject, error)
+	// RegisterVehicle Register a vehicle owned by the current driver (FR-DRV-2)
+	// (POST /v1/vehicles)
+	RegisterVehicle(ctx context.Context, request RegisterVehicleRequestObject) (RegisterVehicleResponseObject, error)
 }
 
 type StrictHandlerFunc func(ctx context.Context, w http.ResponseWriter, r *http.Request, request any) (any, error)
@@ -1356,6 +2860,91 @@ func (sh *strictHandler) GetReadyz(w http.ResponseWriter, r *http.Request) {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetReadyzResponseObject); ok {
 		if err := validResponse.VisitGetReadyzResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// ListDocumentsForReview operation middleware
+func (sh *strictHandler) ListDocumentsForReview(w http.ResponseWriter, r *http.Request, params ListDocumentsForReviewParams) {
+	var request ListDocumentsForReviewRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ListDocumentsForReview(ctx, request.(ListDocumentsForReviewRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ListDocumentsForReview")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ListDocumentsForReviewResponseObject); ok {
+		if err := validResponse.VisitListDocumentsForReviewResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetDocumentForReview operation middleware
+func (sh *strictHandler) GetDocumentForReview(w http.ResponseWriter, r *http.Request, id ID) {
+	var request GetDocumentForReviewRequestObject
+
+	request.Id = id
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetDocumentForReview(ctx, request.(GetDocumentForReviewRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetDocumentForReview")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetDocumentForReviewResponseObject); ok {
+		if err := validResponse.VisitGetDocumentForReviewResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// ReviewDocument operation middleware
+func (sh *strictHandler) ReviewDocument(w http.ResponseWriter, r *http.Request, id ID) {
+	var request ReviewDocumentRequestObject
+
+	request.Id = id
+
+	var body ReviewDocumentJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ReviewDocument(ctx, request.(ReviewDocumentRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ReviewDocument")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ReviewDocumentResponseObject); ok {
+		if err := validResponse.VisitReviewDocumentResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -1523,6 +3112,149 @@ func (sh *strictHandler) RefreshTokens(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// SubmitDocument operation middleware
+func (sh *strictHandler) SubmitDocument(w http.ResponseWriter, r *http.Request) {
+	var request SubmitDocumentRequestObject
+
+	var body SubmitDocumentJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.SubmitDocument(ctx, request.(SubmitDocumentRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "SubmitDocument")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(SubmitDocumentResponseObject); ok {
+		if err := validResponse.VisitSubmitDocumentResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateDocumentUploadUrl operation middleware
+func (sh *strictHandler) CreateDocumentUploadUrl(w http.ResponseWriter, r *http.Request) {
+	var request CreateDocumentUploadUrlRequestObject
+
+	var body CreateDocumentUploadUrlJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateDocumentUploadUrl(ctx, request.(CreateDocumentUploadUrlRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateDocumentUploadUrl")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(CreateDocumentUploadUrlResponseObject); ok {
+		if err := validResponse.VisitCreateDocumentUploadUrlResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// RegisterDriver operation middleware
+func (sh *strictHandler) RegisterDriver(w http.ResponseWriter, r *http.Request) {
+	var request RegisterDriverRequestObject
+
+	var body RegisterDriverJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.RegisterDriver(ctx, request.(RegisterDriverRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "RegisterDriver")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(RegisterDriverResponseObject); ok {
+		if err := validResponse.VisitRegisterDriverResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetMyDriver operation middleware
+func (sh *strictHandler) GetMyDriver(w http.ResponseWriter, r *http.Request) {
+	var request GetMyDriverRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetMyDriver(ctx, request.(GetMyDriverRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetMyDriver")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetMyDriverResponseObject); ok {
+		if err := validResponse.VisitGetMyDriverResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetDriver operation middleware
+func (sh *strictHandler) GetDriver(w http.ResponseWriter, r *http.Request, id ID) {
+	var request GetDriverRequestObject
+
+	request.Id = id
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetDriver(ctx, request.(GetDriverRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetDriver")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetDriverResponseObject); ok {
+		if err := validResponse.VisitGetDriverResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // GetMe operation middleware
 func (sh *strictHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 	var request GetMeRequestObject
@@ -1547,65 +3279,169 @@ func (sh *strictHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// UpdateMe operation middleware
+func (sh *strictHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
+	var request UpdateMeRequestObject
+
+	var body UpdateMeJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateMe(ctx, request.(UpdateMeRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateMe")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(UpdateMeResponseObject); ok {
+		if err := validResponse.VisitUpdateMeResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// RegisterVehicle operation middleware
+func (sh *strictHandler) RegisterVehicle(w http.ResponseWriter, r *http.Request) {
+	var request RegisterVehicleRequestObject
+
+	var body RegisterVehicleJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.RegisterVehicle(ctx, request.(RegisterVehicleRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "RegisterVehicle")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(RegisterVehicleResponseObject); ok {
+		if err := validResponse.VisitRegisterVehicleResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // Base64 encoded, compressed with deflate, json marshaled OpenAPI spec.
 // Stored as a slice of fixed-width chunks rather than one concatenated
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
-	"57ppPWoWT59YFmR+RyaxWvwzAAD//w==",
+	"7Hzrchs5ku6rIOpMxMjRRYrUzS12TJxDi5RcbonkkJQ9M5YPDVYlSbSqgGoAJZnt0QPs7Evsz/25rzRv",
+	"sgGg7ixeJNma3oiN0A+RxDXzywsyE/hquSwIGQUqhdX6aoWY4wAkcP2p7boQyktM5xGeg/qGUKtlLQB7",
+	"wC3bojgAqxU3q6XtbEu4Cwiw6vAHDjOrZf2f/WyeffOr2E87PDzY1lnEBeOqiwfC5SSUhKnJKHyRE1f/",
+	"iGacBUguAIUc7giLBArxHOqWbdb1awR8mS3LdCqsRi5D9YuQnNC5ntbppNsKsVxkvYln2RaHXyPCwbNa",
+	"kkeQH2nGeICl1bKiSLdcHfmSBESmg5fW5usf8wN6MMORL63WccO2AvyFBFFgtZoN9YnQ+FM6D6ES5sCt",
+	"BzUTBxEyKkDz7A32hvBrBELP7TIqgep/cRj6xMWKrPshZ1Mfgh9+EYrGXy34goPQB9PDUxO8b186nfbY",
+	"6fcm523nstuxbMsDiYmvKLVgFCbQPDlCQSQkmgIiFHXr6gtDGBtBfV5HPxwcN0+bzYPDo+OT14pPQmIZ",
+	"Cat1pPYliVRzWg69wz7xEI/Xne5yIWUoWvv7HnNFHWZsWQe5D5wzLvZ1F70b62FXwA3Mtg3VijAbLyCZ",
+	"HxGBiFlSXY19xujMJ+5j6Pns5SRzCnRP5EJj3o04ByqRIiGgPS8y04ONsM8Be0ukhALuwavX66/0ys8Z",
+	"nxLPA/qSS1eUdLHvA0cBXiLKJPIYkgsi9Jp6TJ6ziHovuaQeQyJyF4iDYBF3QS9kzNgVpstYWMRLrmeo",
+	"OKhVAIIvLoAHnhIOo1f1SoYg+bLWnkmoUIkjcBn1BJIM3WOixG/GuIKv5EtC5/UqlZdTGA+2dU1xJBeM",
+	"k9/Ae5aacHpaUUzOht1Otzd22pejgpQ3MykvzLmTiEf5Ht9CyK+IEITO7US8EeMIvoRKwyOXgwdUEuwr",
+	"nKazaW504I644NAZ0zaSsxC4JEbf4jCc3AEXxJCoZAdsi4mNP4c+lkplbtuVWcIgaa16RmIxkewWaLVl",
+	"y2zXx2yWTynh2fQXcKUaqDS04jNV1uaj1e51hn1HqX6nr/j6ofsmN0K2iQ5zoyDGT5E6MbAmpkvF/l0O",
+	"WII3wbJgVT0soSZJAFbFdB5zJzQKpkY2aOT7eKogZmx0ZfNk/o0kjncxVm0fbMsgQ0wM5wpLU4Z827TE",
+	"28FPsC0iRATeUydh9xT4ZMepTGMfT8FfVSodTu6AI+WfKLG4gwVxfUAKOdrDWjPaYwjbVz0S6nJQ+COM",
+	"TjjgWL9s3W5i4TbBZesgiXbabdEj0/rBttTUk4hX0G60YFzWfHIHHroeXirFrCz2jPiA9rAXEIqAeiEj",
+	"VArEqL98pSia8YuT7esuSbTmcI4FOSgUGZ3Df7p1uyiXBSms1BAxLRwaRhVCXpTHAH+5BDqXC6t10vhu",
+	"4lgyqDFllPeJOkPnvdO7mFw6Z93eWddGTm90PWz3zroIUw+1e73r9uXE6Y0G3TPl4P6Ud2I13yIZcSiw",
+	"KJbHlc0oFk9uYVmp2zaK9rcQ5ScKXwlK61CUw026zU3oyGbImRDFjO7Qsq333bfO2WV3o/0YxKfMIryI",
+	"hKD4zy77VePGE2HO8VJ9zp0ld1A3ZYnTs28iwFBrpwr5AJckDkBqWgeDYf9917KtYfdd92xcSZdMM66B",
+	"+/0CKIo1KZ3/hMSC3dNE/XhaoysY50TyuNHYttF0uZv2OkqVaLKjQbfXcXoXlm1d9zrd4WTYfe90P1h2",
+	"stVOulf9b/cvA2fY7WzEQwKmkqXSkGqtyvmgr/6dnF1221rcbTR42x/3bfTXdu+iPxkM++fOZddG/fHb",
+	"7rB+Q2NItlD8z+TSeTPM6wt7VVmkYyaDWHYB67kFZaA3Ays3KhlZkaU8tGVb5R2or9R0lm0V9mDZ1njY",
+	"7nRzU42d3uSsOxw7585Ze6y+0Suspq9GRoW39gRnDALgc6DucqJsCnblxIQ4drDmq111YGGnvrPI99OZ",
+	"nup7+cQF6sJEHaPnjFdr8aTRZndwbbfMMK76/mkYZactm7PrVv2neTsybXf2dvp0yjD3CJ1n/o6QkToR",
+	"TVwFkBkxJ8V4VVPGfMA69BKJXc1WlQuT9M5zNN3qChUrWFbJoJyns7qL7e6OJuEaZ2c93nNatnnQeBze",
+	"Nx5oVaOuQskayOYmPjLhwnQd9nfE8/ppD78RekuAeS4q1vN6wJlycSpdW22JRIUZSn5CbJazt9rHNN+Q",
+	"9BglbEThHoREM8KF1BHr5zozXqrEtxNUH1/ipezsSb03HVbnLvsLZorcDHaObuuJPkoRkRjQcfsvTmLq",
+	"tLXsdJVX0e1Vu0dvAftykXkiJWO2APfWhGg8jyimYX9QFOV4Wnar1A8mfuUsK6sXwO+IW214xIpbpAeP",
+	"KL7DxKj3qjnWR4jKIpCqtXgRWd8qQr/78PNolTK3sCyioBTR8uf5DXS9zqhduWqX3xUbHhwfN08rm94S",
+	"r5Jet3KZH6L/86CyeyQKOBFkXtnsy6qUvsECTo4i7qMwmvrERbewrG81TWpZZn9qULN8WxPGrKWK1htl",
+	"RJO8qlc+uZZsDwfaqVSnsaByn5dsTmguy1O2UDpLk9Pp5puKgUIsxD3jReOdflk0JQdVssFkODGh4K9W",
+	"iKUEroj+/z82aqefvp48/GErpZOlpZNWEekKHrPLZ/qO6a8THOzkl+3sbNJb8CaceNrjqbAoQ/WT0KkS",
+	"pPwiNI8w9wRiHBFRsBlbJysbi0e6muGCSbY91iXInJqQ1+PjWbYVcpgB5+BN/JwQ7JYwti3OHmPLhsyH",
+	"C47pdkld8UUrlpnMXsHUavheh9qtWgFxAYll/3GLH1fGabn7d6V/lV1cOUM8MjjQPhs7OiIyuh5ps1+I",
+	"GFTpwb4M12rBIuJ39K/LaZNsjCq+ZtObs1FJQcWOJ6ETUUieHeZCMGlaTmfxgXoTPJPASz1OKjqU9Wh+",
+	"tpXB1qz+PXAyW1ZlbR6j0W3Lg8Qh2p7C0lm0FY30bP7YZtFVG83652lqFWoTtAVKN3tz88PHZu30k9n0",
+	"a7t5VL3vJNW4qsnPz9Dp0fFrFGdQkSmd0Eq8mtQlJSuV5KIAuwtCocYBe/oLnRhFqk+9mg8yNoobHNNV",
+	"5MUZ2q/rzMjXsmrfbNLjmLEZtZBzWMOgIcw4iMVaUebm912TncXmlRMyv+BwjcbX6pAxGTodHas+c947",
+	"l5NRd/i+nfv24ro97DjtnmVnUe3zy253POl/6OlPTm80dsbXumqm3blydFNnNGiPz97qBqPrwaA/HE/a",
+	"F+pMoz93h3HTKgWXma1VosR72Gb1TOKcbU8UjHSjpHUc0SnC0qFCEhmpTzaa+QBS+Sa/MQqIeD8hZXF0",
+	"Bubisv+mXfIJjKPyuJC73mOy/CpGjpKNJZw0MxdZkbDJsq2/9XvVGYixwsoAE14qc8CuC0IkyLNg+W4x",
+	"vXBJn7w7/1t3OP7zyBFOIMO/nTknzi/O/dUvf5VXnVsy+3MdDht198DX8eFUN1utU6X8S4C2Dn89qL2+",
+	"7/6lfTW47DLqL3P/KklSzeJkj/UGMNenbeUhlnwIqz2FKaCfYQqeIpziodVonh6czA5x7bXbhNpr72Ba",
+	"O8VHzdrxrOEeTn+EA6/ZrPJkWh8/FbX0qsascCDM4SV2zj4mMM3LTgzGjFUZ3hQ6Hj49PJSVZJELZVTq",
+	"A2ot9kXffRhXqsY8D8oDtPXwSA+PfDIDSQKdDBSm0KaueRhj4nSd9S7pqMNGzcNLJHyiPCJTZrKsmz2W",
+	"61L6If41ArOASm8+B4AM6zES1pyXt0aGrlYDbAU6F6YtELC823i+KgG9Dn2GvWtzkKj2jx6TbNiYbg3w",
+	"l8l0KaHoOzUbRz8evz6pZFqkV5eccx5l5HJdc8uy87vKr2gjbdYavnL1TMJ5EuA57P8SwlwJuf4Q0uz/",
+	"e5iGll2s5PJmlUB5ajL+95ysLlCtivBJYLOC3j6L+DerU9IWcrKJVFvPaAssJjpkPMFkTf5FNRGA5RR8",
+	"Kaqb7MinAN9Wu4EB86DarTSbMxHgp+4xxEIAnauDCmC5xkfVdUibkmlPz3PFYeuJ62Oxa1D8TLd9sK0l",
+	"YF5ZZlkRVSjsoTxvTP6E2PHIdoLJVTKVOV8GS97z3pzvKuwpp2aunJ7z5npk2daV04n/G3U72oqPrt9X",
+	"KpR4rDXJs0zActGKw8YuwE/r42fYFxmMNglC2qUAvFyPBPDbSpZS/G9rWAHlrJT/ZHMl/yrG8xGd460J",
+	"tm8C42yBp6fbgw7fFtCr0NTJFjfiRC5HauEGRFPt97QjRYjk03midN59GFv2JgcR55w9GzWPawGhkS7H",
+	"Nn5fWj2tsZI427lqZVNYTOJi4OJMA5NjGHZHY9QeOPowJBeAujO2RGKBOXg1lwWBmjCpyUV7Hqi1IY+5",
+	"yuNUQ6Hmwav6DR0viDBVhETocUwGVKcXeSQXLf3lBUMC+B1wtMdwSGrqnD0H+kpnIlWDe5jeUNcnQCXa",
+	"YyFQ1UrtyCz9FcIc0BwocKUlzC0bIuuo7XkIZ6WLaAEcbqiWStssBweAlJdL9KWJaUR8Wb+hN/SM0Tug",
+	"aieihYbnZ+jw8PAUXY/PkCKxkDgIhY3iWz0hnhOq3ZQbuvf5/+q6+D/dRI3GwYlp8afPqKY+HwL6nCvh",
+	"+vzKRuVAiy5VN2ESYd/Qz6WrSS2EA/R3BBT9HbHgsynfSQrUNZPaAyeXU2tZjXqz3tCWztBNndbqjfqh",
+	"CRgtNCD36/fg+7Vbyu7p/i/3t6KeFMzPQVadol0/8sBwFLuS3AG6haVil410xA5hxJnE5pxduO/EqAao",
+	"0qn6Z0ed8C5Avru/jcN+2U2gg0ZjQ23/4y4z6ETimsse70b9HvoAU/QzLNEIZL0guOYcKaIgwHyZicgt",
+	"LBUBsER3OghZkEuB9uJkoo3UzK8Ul/Bc6DOKknt9Rtxf6PzvbzlCr9DlbdzkSaTJxQHSnK/lMg41BYTM",
+	"5TA53gwzdylodiNuIY+9hsghZ5o+RGhhV0fK+LqS2EzvS3IHVPVUEgI5QhrqxaTUF4g2UnJoWjyXkFlW",
+	"PmRCzjnE9Mvn1f8VNG77PvIgBOoBdQkIrRM5YHehfFd9Yei4cfgN9qrrDLbuNl8w8F23LZEPWEilWLL9",
+	"LxXMckvYjDCFDJJBDO2ZfRfJqe9fYYEGMSVerUPiXXNfV8zvF0pvKlF5SYRMq3DOGY/rb+3CLdaPK3U7",
+	"xivU16fitJS2lPnElIn4hL4OzscOZ9U1zqwcI+XGo+p6skNIOWEr5FIbpfi2T/Vw2T73zW3THRrG92wf",
+	"Pn1Ha1Go565Cnb63q9yYlMlawo4azXVDp2vdvy7dCjsyYrm5U3YTUiM5xW6y0vjuJPo1gghsxHwvLdbK",
+	"2x4FzLU43f9KvIdNKjSZbANUtzDP6bwM49ZZoWSvL8ct1eNoe4/0VmmRvX2ardncpMVIrF7W0axPbuw8",
+	"jt/7PCv6Z6KC74bTKWGfzHFt698wb/k4G5TdPUguGmTXCoxjsWCSae/djzhf/qTpEBdPInO0Qy6mlOkb",
+	"MspPqO9ufko3Ix6KB0h1LH/4F6I5uU1WhnVjO95yt+x/t5KgOpxu75Beby+KTjsMObvTdwHNBROEM1Ha",
+	"E1GojilKIGzkERFi6S6Av9ogPJFc7PtsbhIwiayUmNIfDxQUA0w9LBlfmvtcaQbVRoUEqjbbuRQq2jsf",
+	"1pz2VU0fnj8sgKqDVHJXRh2L9eDmErDGuTqjYyrugQt01GgaFaEbflZrmQy7f752ht1OfFIsuR96M8+Q",
+	"zbiEzcro9//iG9D5gjjtIHLFgAXjAtBU1ykskZA4NNoqK8KzTHJudwEtVBK+sHhmOdcK+bxk8zl4iNCX",
+	"lcmDHQSm/HDAJt94JPFshjTs02DQPUxRyLjEvkB7GgPoB5SwG/2AFPLWnHhzcsTi+Gql0bk0vz8Wm7vx",
+	"rVSu8bD6BsmBUVTlVwuEMkRK67Jb8J7qQjwUjx5qrOLzGGaazfRjMtznuaxbpTYaYgk1HY0CT3kJh+mJ",
+	"Gynl12wgEzo0H3WmPNVAzVerYZqYYH0ZPtoLKD3E8yyPYENKf2e1kSu820lpHDxSMRZK5w5NyUSxOu6k",
+	"8YTFavysqBpldMRzrP83VxpAPYTRSc0jcyLR6GqE1BolQziGWRpy34Lxu6zArxLiafTblCdog4olCpiQ",
+	"6BgpQxOEMdzVCnLoRmc6p2SCmLpYmVFzXjLabhX+ptjQoP/J4I3N3NGPB6fNQytfeVh4h8Nq1hv1hpV/",
+	"XiN9zOLB/lYiEJdP/q/Z/OYS8D6OCVMNO4VKDi6QO0jCxOYrbYfikPFmYYjbblD2hcFM+B0UpuFOOVuR",
+	"gJ8Qh0h7jpgi5ns6ZGaMmZGC+wXzAc1wQPxlKiqHlYZAzzVO1v0yRvp3g9GeOmzrWqsQE/4cP2BdQNIw",
+	"DxcRshYghUBjtT81iqYBkblD/PdgWfGVjZ041nyRs3IaJBOaDMod2osjp69+10fmkq/oKv8aU2Rqt3Ln",
+	"fu2axxFAJbid4fvaYd4Fz11nXEHNvhmuFleRVauXwfU4exJGMpSVj2UPvOls6plhZm28DEH/RChqHiee",
+	"pn1DpXnyQe+FxEGtQX80RoVFoSg943KQEafgoaRKrX5D3w26FzYa9C5s9AGmA3XIH3TO7dT2Nxvo6k3V",
+	"mddY/QQQWXXfs0x6vsitWNuWladVPK6QFVbtWuOaL0RLarh3Nvgr5XovLKEZsStE1Pyo45lxsc//HMG8",
+	"AKkcWw617D5ZJiP5sJN5UGlXAdVFaWJDtGkBiMJ9cm9bSMylSFJCdaR+NhhBnJkSjDnHVGk/LBGjrvYI",
+	"tIHRUlnIYKv1CwBdGGEeFTJfuz4mgaiSrCHMiZDAO8lt6meElapfKLDafoB/y6rD1z5HkLjEjUajGdeG",
+	"lx8dSNL4B9U37VvqzHdaa5zUDhur9/VbVrtdy8rIk5cBzPXv3WPLuVcaXtpYxpfqK0ylwdK/RgafHuxN",
+	"wFeIpOhTHRZKAM2uEslrFiQvFrOy3O2bS43rcmFXyxzQv1f8v/C2w3puhabFc5JaT09RjUsU/6NIyB0v",
+	"y5j45G0FffLJtN0OfNialUz48DtLRb4c814yI9kuc3cvezokn0kRNhJRGDIuNcdz+RaxUfq2SB18T3m7",
+	"gnWZNkVxoFK/V+xpmH+T8O9ZUW5iktraXhtJMbeakL7VlJeWAKxPul5XuotVSpnr2jGxnmiFN1zLKt7c",
+	"tv75j//457+pP/TPf/yn+u/f/2vD5aqd7WN66/yFz/7rURDp9RT4/xKmsQAZQ5MVO/dHYV4+1ZjJrvkX",
+	"4BJLWP4dnXUpf2NNk3smzzocmYJ568OC6HeZSnXxprK9VPluvjTF7daYLZnEaRl2y3pL2vrdmJVa9eZB",
+	"uQRd+WmHxlNbKe9u5a4HmOrxg0bzx53RWbgn8MLuW/qw0SpM458SBy6Nc6CISuIjIkVmfHWJIDZpcu/V",
+	"77524Bt4hzh9FlidpD00XRYEqeQmHuQNVSo1nx5KobtiQf/HT8qrMPXsVdV7A868SNfIW7alQy7pE+I4",
+	"JMkL4roQrhwZd7GPPLgDn4VxFC/r39rf91WDBROy9WPjx4Z2buLFf03K/eJCRTV4/I2OJOY+B5D/lFjn",
+	"3FcpHfLNUncuP7Iun3j49PDfAQAA//8=",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

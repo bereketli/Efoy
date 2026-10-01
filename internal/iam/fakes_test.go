@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -98,6 +99,18 @@ func (m *memRepo) CreateUser(_ context.Context, u User) error {
 
 func (m *memRepo) TouchLastLogin(context.Context, uuid.UUID, time.Time) error { return nil }
 
+func (m *memRepo) UpdateProfile(_ context.Context, userID uuid.UUID, fullName string, fullNameAm *string, language string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	u, ok := m.users[userID]
+	if !ok {
+		return ErrNotFound
+	}
+	u.FullName, u.FullNameAm, u.PreferredLanguage = fullName, fullNameAm, language
+	m.users[userID] = u
+	return nil
+}
+
 func (m *memRepo) ListGrants(_ context.Context, userID uuid.UUID) ([]authz.Grant, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -107,6 +120,9 @@ func (m *memRepo) ListGrants(_ context.Context, userID uuid.UUID) ([]authz.Grant
 func (m *memRepo) GrantRole(_ context.Context, _, userID uuid.UUID, g authz.Grant, _ *uuid.UUID) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	if slices.Contains(m.grants[userID], g) {
+		return ErrConflict
+	}
 	m.grants[userID] = append(m.grants[userID], g)
 	return nil
 }

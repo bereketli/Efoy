@@ -28,6 +28,7 @@ func (h *Handler) Routes(r chi.Router) {
 	r.Post("/auth/refresh", h.refresh)
 	r.With(authz.RequireAuth).Post("/auth/logout", h.logout)
 	r.With(authz.RequireAuth).Get("/me", h.me)
+	r.With(authz.RequireAuth).Patch("/me", h.updateMe)
 }
 
 // Request and response bodies (schemas in efoy.yaml).
@@ -264,4 +265,43 @@ func (h *Handler) me(w http.ResponseWriter, r *http.Request) {
 func writeTokens(w http.ResponseWriter, pair TokenPair) {
 	w.Header().Set("Cache-Control", "no-store")
 	httpx.WriteJSON(w, http.StatusOK, toTokenPairBody(pair))
+}
+
+// meUpdateBody distinguishes a missing full_name_am (keep) from null (clear).
+type meUpdateBody struct {
+	FullName          *string         `json:"full_name"`
+	FullNameAm        json.RawMessage `json:"full_name_am"`
+	PreferredLanguage *string         `json:"preferred_language"`
+}
+
+func (h *Handler) updateMe(w http.ResponseWriter, r *http.Request) {
+	actor, err := authz.Require(r.Context())
+	if err != nil {
+		errs.Write(w, r, err)
+		return
+	}
+	var body meUpdateBody
+	if err := decode(w, r, &body); err != nil {
+		errs.Write(w, r, err)
+		return
+	}
+	in := ProfileUpdate{FullName: body.FullName, PreferredLanguage: body.PreferredLanguage}
+	switch {
+	case len(body.FullNameAm) == 0:
+	case string(body.FullNameAm) == "null":
+		in.ClearFullNameAm = true
+	default:
+		var am string
+		if err := json.Unmarshal(body.FullNameAm, &am); err != nil {
+			errs.Write(w, r, errInvalidJSON)
+			return
+		}
+		in.FullNameAm = &am
+	}
+	profile, err := h.svc.UpdateProfile(r.Context(), actor, in)
+	if err != nil {
+		errs.Write(w, r, err)
+		return
+	}
+	httpx.WriteJSON(w, http.StatusOK, toMeBody(profile))
 }

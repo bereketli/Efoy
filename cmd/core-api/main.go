@@ -14,17 +14,24 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 
+	"github.com/blinge12/efoy/internal/driver"
+	driverpg "github.com/blinge12/efoy/internal/driver/postgres"
 	"github.com/blinge12/efoy/internal/iam"
 	iampg "github.com/blinge12/efoy/internal/iam/postgres"
 	"github.com/blinge12/efoy/internal/notification"
 	"github.com/blinge12/efoy/internal/platform/bootstrap"
 	"github.com/blinge12/efoy/internal/platform/postgres"
+	"github.com/blinge12/efoy/internal/vehicle"
+	vehiclepg "github.com/blinge12/efoy/internal/vehicle/postgres"
 	"github.com/blinge12/efoy/pkg/authz"
 	"github.com/blinge12/efoy/pkg/clock"
+	"github.com/blinge12/efoy/pkg/objstore"
 )
 
 func main() {
@@ -85,10 +92,40 @@ func setup(ctx context.Context, app *bootstrap.App) error {
 		Log:     app.Log,
 	})
 
+	files, err := objstore.New(objstore.Config{
+		Endpoint:  cfg.S3.Endpoint,
+		AccessKey: cfg.S3.AccessKey,
+		SecretKey: cfg.S3.SecretKey,
+		UseSSL:    cfg.S3.UseSSL,
+		Region:    cfg.S3.Region,
+		PublicURL: cfg.S3.PublicURL,
+		Bucket:    cfg.S3.DocumentsBucket,
+	})
+	if err != nil {
+		return err
+	}
+	bucketCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+	if err := files.EnsureBucket(bucketCtx); err != nil {
+		// Not fatal: storage may still be starting; readiness reports it.
+		app.Log.Warn("object storage not ready", "error", err)
+	}
+	app.Health.AddCheck("object-storage", files.Ping)
+
+	// The vehicle domain looks drivers up through the driver service, which in
+	// turn lists vehicles; the closure breaks the construction cycle.
+	var drivers *driver.Service
+	vehicles := vehicle.NewService(vehiclepg.New(pool), func(ctx context.Context, userID uuid.UUID) (uuid.UUID, error) {
+		return drivers.DriverIDForUser(ctx, userID)
+	}, clk)
+	drivers = driver.NewService(driverpg.New(pool), vehicles, files, svc, clk)
+
 	app.Router.Get("/.well-known/jwks.json", keys.Tokens.JWKS)
 	app.Router.Route("/v1", func(r chi.Router) {
 		r.Use(authz.Authenticate(keys.Tokens))
 		iam.NewHandler(svc).Routes(r)
+		driver.NewHandler(drivers).Routes(r)
+		vehicle.NewHandler(vehicles).Routes(r)
 	})
 	return nil
 }

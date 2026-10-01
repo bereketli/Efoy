@@ -340,6 +340,71 @@ func (s *Service) Me(ctx context.Context, actor authz.Actor) (Profile, error) {
 	return s.profile(ctx, s.repo, user)
 }
 
+// ProfileUpdate changes fields of the caller's profile; nil fields are kept.
+type ProfileUpdate struct {
+	FullName          *string
+	FullNameAm        *string
+	ClearFullNameAm   bool
+	PreferredLanguage *string
+}
+
+var (
+	ErrInvalidName     = errs.Invalid("INVALID_NAME", "full_name must be 1–120 characters.")
+	ErrInvalidLanguage = errs.Invalid("INVALID_LANGUAGE", "preferred_language must be am, en or om.")
+)
+
+// UpdateProfile implements PATCH /me.
+func (s *Service) UpdateProfile(ctx context.Context, actor authz.Actor, in ProfileUpdate) (Profile, error) {
+	user, err := s.repo.GetUserByID(ctx, actor.UserID)
+	if errors.Is(err, ErrNotFound) {
+		return Profile{}, authz.ErrUnauthenticated
+	}
+	if err != nil {
+		return Profile{}, err
+	}
+	if in.FullName != nil {
+		name := strings.TrimSpace(*in.FullName)
+		if name == "" || len(name) > 120 {
+			return Profile{}, ErrInvalidName
+		}
+		user.FullName = name
+	}
+	if in.ClearFullNameAm {
+		user.FullNameAm = nil
+	} else if in.FullNameAm != nil {
+		name := strings.TrimSpace(*in.FullNameAm)
+		if len(name) > 120 {
+			return Profile{}, ErrInvalidName
+		}
+		user.FullNameAm = &name
+	}
+	if in.PreferredLanguage != nil {
+		switch *in.PreferredLanguage {
+		case "am", "en", "om":
+			user.PreferredLanguage = *in.PreferredLanguage
+		default:
+			return Profile{}, ErrInvalidLanguage
+		}
+	}
+	if err := s.repo.UpdateProfile(ctx, user.ID, user.FullName, user.FullNameAm, user.PreferredLanguage); err != nil {
+		return Profile{}, err
+	}
+	return s.profile(ctx, s.repo, user)
+}
+
+// GrantRole gives a user a role; granting a role the user already holds is a
+// no-op. Other domains use it, e.g. driver registration grants DRIVER.
+func (s *Service) GrantRole(ctx context.Context, userID uuid.UUID, g authz.Grant) error {
+	if err := g.Validate(); err != nil {
+		return err
+	}
+	err := s.repo.GrantRole(ctx, idgen.New(), userID, g, nil)
+	if errors.Is(err, ErrConflict) {
+		return nil
+	}
+	return err
+}
+
 func (s *Service) startSession(ctx context.Context, r Repo, user User, deviceID *uuid.UUID, sliding bool, ttl time.Duration, meta ClientMeta) (TokenPair, error) {
 	now := s.clock.Now()
 	raw, sess := s.newSession(user.ID, deviceID, idgen.New(), sliding, now.Add(ttl), meta)

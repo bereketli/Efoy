@@ -23,6 +23,7 @@ type Repo interface {
 	EnsureUserByPhone(ctx context.Context, u User) (User, error)
 	CreateUser(ctx context.Context, u User) error
 	TouchLastLogin(ctx context.Context, userID uuid.UUID, at time.Time) error
+	UpdateProfile(ctx context.Context, userID uuid.UUID, fullName string, fullNameAm *string, language string) error
 
 	ListGrants(ctx context.Context, userID uuid.UUID) ([]authz.Grant, error)
 	GrantRole(ctx context.Context, id, userID uuid.UUID, g authz.Grant, grantedBy *uuid.UUID) error

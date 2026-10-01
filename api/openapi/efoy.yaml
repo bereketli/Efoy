@@ -20,6 +20,10 @@ tags:
   - name: health
   - name: auth
   - name: me
+  - name: drivers
+  - name: vehicles
+  - name: documents
+  - name: admin
 security:
   - bearerAuth: []
 
@@ -194,6 +198,228 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Me" }
         "401": { $ref: "#/components/responses/Unauthorized" }
+    patch:
+      tags: [me]
+      operationId: updateMe
+      summary: Update the current user's name and language
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MeUpdate" }
+            example: { full_name: "Abebe Kebede", full_name_am: "አበበ ከበደ", preferred_language: am }
+      responses:
+        "200":
+          description: The updated user.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Me" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /v1/drivers:
+    post:
+      tags: [drivers]
+      operationId: registerDriver
+      summary: Register the current user as a driver (FR-DRV-1)
+      description: |
+        The new driver starts PENDING. The DRIVER role is granted at once; refresh
+        the access token to see it in the token claims.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DriverInput" }
+            example:
+              source: TAXI
+              licence_number: "AA-1234567"
+              licence_category: "Public 2"
+              licence_expires_on: "2029-06-30"
+              emergency_contact_name: "Almaz Kebede"
+              emergency_contact_phone: "+251911000111"
+      responses:
+        "201":
+          description: Driver created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Driver" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /v1/drivers/me:
+    get:
+      tags: [drivers]
+      operationId: getMyDriver
+      summary: The current user's driver profile with vehicles and documents
+      responses:
+        "200":
+          description: Driver profile.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DriverProfile" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/drivers/{id}:
+    get:
+      tags: [drivers]
+      operationId: getDriver
+      summary: A driver profile (the driver, dispatchers, support and super admins)
+      parameters:
+        - $ref: "#/components/parameters/ID"
+      responses:
+        "200":
+          description: Driver profile.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DriverProfile" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/vehicles:
+    post:
+      tags: [vehicles]
+      operationId: registerVehicle
+      summary: Register a vehicle owned by the current driver (FR-DRV-2)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/VehicleInput" }
+            example:
+              plate_number: "AA-3-12345"
+              vehicle_class: MINIBUS
+              make: Toyota
+              model: HiAce
+              year: 2018
+              colour: White
+              passenger_seats: 12
+              has_seatbelts: true
+              has_first_aid: true
+      responses:
+        "201":
+          description: Vehicle created (PENDING until its documents are approved).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Vehicle" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /v1/documents/upload-url:
+    post:
+      tags: [documents]
+      operationId: createDocumentUploadUrl
+      summary: Get a pre-signed URL to upload a document file (FR-DRV-3)
+      description: |
+        PUT the file to upload_url with the same Content-Type within 15 minutes,
+        then record it with POST /v1/documents using the returned file_key.
+        JPEG, PNG, WebP or PDF, at most 10 MB.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UploadUrlRequest" }
+            example: { owner_type: DRIVER, owner_id: "01926f3a-7c1e-7d2b-9a41-5f0c3b8e2d11", doc_type: DRIVING_LICENCE, content_type: image/jpeg }
+      responses:
+        "201":
+          description: Upload URL created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UploadUrl" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/documents:
+    post:
+      tags: [documents]
+      operationId: submitDocument
+      summary: Record an uploaded document for review (FR-DRV-3)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DocumentInput" }
+      responses:
+        "201":
+          description: Document submitted (PENDING).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Document" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/admin/documents:
+    get:
+      tags: [admin]
+      operationId: listDocumentsForReview
+      summary: Document review queue, oldest first
+      parameters:
+        - name: status
+          in: query
+          description: Defaults to PENDING and UNDER_REVIEW.
+          schema:
+            type: array
+            items: { $ref: "#/components/schemas/DocumentStatus" }
+          style: form
+          explode: false
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: A page of documents.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DocumentPage" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/admin/documents/{id}:
+    get:
+      tags: [admin]
+      operationId: getDocumentForReview
+      summary: One document with a short-lived URL to view the file
+      parameters:
+        - $ref: "#/components/parameters/ID"
+      responses:
+        "200":
+          description: The document.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Document" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/admin/documents/{id}/review:
+    post:
+      tags: [admin]
+      operationId: reviewDocument
+      summary: Approve or reject a document (super admin, dispatcher)
+      parameters:
+        - $ref: "#/components/parameters/ID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DocumentReview" }
+            example: { decision: REJECT, reason: "The photo is blurry; the licence number cannot be read." }
+      responses:
+        "200":
+          description: The reviewed document.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Document" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
 
 components:
   securitySchemes:
@@ -204,6 +430,20 @@ components:
       description: EdDSA-signed access token, 15-minute lifetime.
 
   parameters:
+    ID:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+    Cursor:
+      name: cursor
+      in: query
+      description: next_cursor from the previous page.
+      schema: { type: string }
     AcceptLanguage:
       name: Accept-Language
       in: header
@@ -211,6 +451,21 @@ components:
       schema: { $ref: "#/components/schemas/Language" }
 
   responses:
+    Forbidden:
+      description: The caller may not do this.
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    NotFound:
+      description: No such resource.
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    Conflict:
+      description: Conflicts with the current state (duplicate, already reviewed...).
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
     BadRequest:
       description: The request is invalid.
       content:
@@ -408,3 +663,184 @@ components:
           type: array
           description: Riders this user guards or is.
           items: { type: string, format: uuid }
+
+    MeUpdate:
+      type: object
+      properties:
+        full_name: { type: string, minLength: 1, maxLength: 120 }
+        full_name_am: { type: string, maxLength: 120, nullable: true }
+        preferred_language: { $ref: "#/components/schemas/Language" }
+
+    DriverSource:
+      type: string
+      enum: [TAXI, YANGO, INDEPENDENT]
+
+    OnboardingStatus:
+      type: string
+      enum: [PENDING, UNDER_REVIEW, APPROVED, ACTIVE, SUSPENDED, REJECTED]
+
+    DriverInput:
+      type: object
+      required: [source, licence_number, licence_category, licence_expires_on]
+      properties:
+        source: { $ref: "#/components/schemas/DriverSource" }
+        licence_number: { type: string, minLength: 3, maxLength: 40 }
+        licence_category: { type: string, minLength: 1, maxLength: 40 }
+        licence_expires_on: { type: string, format: date }
+        emergency_contact_name: { type: string, maxLength: 120 }
+        emergency_contact_phone: { $ref: "#/components/schemas/PhoneE164" }
+
+    Driver:
+      type: object
+      required: [id, user_id, full_name, source, licence_number, licence_category, licence_expires_on, status, student_certified, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        full_name: { type: string }
+        phone_e164: { type: string, nullable: true }
+        source: { $ref: "#/components/schemas/DriverSource" }
+        licence_number: { type: string }
+        licence_category: { type: string }
+        licence_expires_on: { type: string, format: date }
+        emergency_contact_name: { type: string, nullable: true }
+        emergency_contact_phone: { type: string, nullable: true }
+        status: { $ref: "#/components/schemas/OnboardingStatus" }
+        student_certified: { type: boolean }
+        created_at: { type: string, format: date-time }
+
+    DriverProfile:
+      type: object
+      required: [driver, vehicles, documents]
+      properties:
+        driver: { $ref: "#/components/schemas/Driver" }
+        vehicles:
+          type: array
+          items: { $ref: "#/components/schemas/Vehicle" }
+        documents:
+          type: array
+          description: Documents of the driver and of their vehicles, newest first.
+          items: { $ref: "#/components/schemas/Document" }
+
+    VehicleClass:
+      type: string
+      enum: [MINIBUS, MIDIBUS, SEDAN, SUV]
+
+    VehicleInput:
+      type: object
+      required: [plate_number, vehicle_class, make, model, year, colour, passenger_seats]
+      properties:
+        plate_number: { type: string, minLength: 3, maxLength: 15 }
+        vehicle_class: { $ref: "#/components/schemas/VehicleClass" }
+        make: { type: string, maxLength: 60 }
+        model: { type: string, maxLength: 60 }
+        year: { type: integer, minimum: 1990 }
+        colour: { type: string, maxLength: 30 }
+        passenger_seats: { type: integer, minimum: 1, maximum: 16 }
+        has_seatbelts: { type: boolean, default: true }
+        has_first_aid: { type: boolean, default: false }
+
+    Vehicle:
+      type: object
+      required: [id, plate_number, vehicle_class, make, model, year, colour, passenger_seats, has_seatbelts, has_first_aid, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        owner_driver_id: { type: string, format: uuid, nullable: true }
+        fleet_owner_id: { type: string, format: uuid, nullable: true }
+        plate_number: { type: string }
+        vehicle_class: { $ref: "#/components/schemas/VehicleClass" }
+        make: { type: string }
+        model: { type: string }
+        year: { type: integer }
+        colour: { type: string }
+        passenger_seats: { type: integer }
+        has_seatbelts: { type: boolean }
+        has_first_aid: { type: boolean }
+        status: { $ref: "#/components/schemas/OnboardingStatus" }
+        created_at: { type: string, format: date-time }
+
+    DocumentOwnerType:
+      type: string
+      enum: [DRIVER, VEHICLE]
+
+    DocumentType:
+      type: string
+      description: |
+        DRIVER: DRIVING_LICENCE, POLICE_CLEARANCE, PHOTO, YANGO_PROFILE, OTHER.
+        VEHICLE: VEHICLE_LIBRE, INSURANCE, ANNUAL_INSPECTION, PHOTO, OTHER.
+      enum: [DRIVING_LICENCE, VEHICLE_LIBRE, INSURANCE, ANNUAL_INSPECTION, POLICE_CLEARANCE, PHOTO, YANGO_PROFILE, TRADE_LICENCE, TIN_CERTIFICATE, OTHER]
+
+    DocumentStatus:
+      type: string
+      enum: [PENDING, UNDER_REVIEW, APPROVED, REJECTED, EXPIRED]
+
+    UploadUrlRequest:
+      type: object
+      required: [owner_type, owner_id, doc_type, content_type]
+      properties:
+        owner_type: { $ref: "#/components/schemas/DocumentOwnerType" }
+        owner_id: { type: string, format: uuid }
+        doc_type: { $ref: "#/components/schemas/DocumentType" }
+        content_type: { type: string, enum: [image/jpeg, image/png, image/webp, application/pdf] }
+
+    UploadUrl:
+      type: object
+      required: [upload_url, file_key, expires_at, max_bytes]
+      properties:
+        upload_url: { type: string, format: uri }
+        file_key: { type: string }
+        expires_at: { type: string, format: date-time }
+        max_bytes: { type: integer, example: 10485760 }
+
+    DocumentInput:
+      type: object
+      required: [owner_type, owner_id, doc_type, file_key]
+      properties:
+        owner_type: { $ref: "#/components/schemas/DocumentOwnerType" }
+        owner_id: { type: string, format: uuid }
+        doc_type: { $ref: "#/components/schemas/DocumentType" }
+        file_key: { type: string }
+        doc_number: { type: string, maxLength: 60 }
+        issued_on: { type: string, format: date }
+        expires_on:
+          type: string
+          format: date
+          description: Required for DRIVING_LICENCE, INSURANCE and ANNUAL_INSPECTION; must be in the future.
+
+    Document:
+      type: object
+      required: [id, owner_type, owner_id, owner_label, doc_type, status, content_type, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        owner_type: { $ref: "#/components/schemas/DocumentOwnerType" }
+        owner_id: { type: string, format: uuid }
+        owner_label: { type: string, description: Driver name or vehicle plate. }
+        doc_type: { $ref: "#/components/schemas/DocumentType" }
+        doc_number: { type: string, nullable: true }
+        issued_on: { type: string, format: date, nullable: true }
+        expires_on: { type: string, format: date, nullable: true }
+        status: { $ref: "#/components/schemas/DocumentStatus" }
+        content_type: { type: string }
+        rejection_reason: { type: string, nullable: true }
+        reviewed_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        view_url:
+          type: string
+          format: uri
+          nullable: true
+          description: Short-lived URL to the file (admin endpoints only).
+
+    DocumentPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Document" }
+        next_cursor: { type: string, nullable: true }
+
+    DocumentReview:
+      type: object
+      required: [decision]
+      properties:
+        decision: { type: string, enum: [APPROVE, REJECT] }
+        reason: { type: string, maxLength: 500, description: Required when rejecting; shown to the driver. }
