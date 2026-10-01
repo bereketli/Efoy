@@ -7,7 +7,8 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Never cancel a run on main half-way through a deploy.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -77,9 +78,26 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
 
+  helm:
+    name: Helm — lint and render
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Lint
+        run: |
+          helm lint deploy/helm/efoy -f deploy/helm/efoy/values-staging.yaml
+          helm lint deploy/helm/efoy-deps
+      - name: Render and validate against Kubernetes schemas
+        run: |
+          mkdir -p rendered
+          helm template efoy deploy/helm/efoy -n efoy-staging -f deploy/helm/efoy/values-staging.yaml > rendered/efoy.yaml
+          helm template efoy-deps deploy/helm/efoy-deps -n efoy-staging > rendered/deps.yaml
+          docker run --rm -v "$PWD/rendered":/m ghcr.io/yannh/kubeconform:latest -strict -summary /m/efoy.yaml /m/deps.yaml
+
   images:
     name: Image — ${{ matrix.service }}
-    needs: [go, migrations, web]
+    needs: [go, migrations, web, helm]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -112,3 +130,31 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/efoy-${{ matrix.service }}:${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+  # GitOps: point staging at the images just pushed. Argo CD watches main and
+  # syncs the change (deploy/argocd/staging.yaml).
+  deploy-staging:
+    name: Deploy — staging
+    needs: images
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Set image tag
+        run: yq -i '.image.tag = "${{ github.sha }}"' deploy/helm/efoy/values-staging.yaml
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deploy/helm/efoy/values-staging.yaml
+          git diff --cached --quiet && exit 0
+          git commit -m "deploy(staging): ${GITHUB_SHA::7} [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main

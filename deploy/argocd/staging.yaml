@@ -1,0 +1,56 @@
+# Argo CD applications for staging. Apply once (see deploy/README.md):
+#   kubectl apply -n argocd -f deploy/argocd/staging.yaml
+# After that, every commit to main that touches deploy/helm is synced
+# automatically; CI bumps image.tag in values-staging.yaml on each push.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: efoy-deps-staging
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1" # data stores before the services
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/bereketli/Efoy.git
+    targetRevision: main
+    path: deploy/helm/efoy-deps
+    helm:
+      releaseName: efoy-deps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: efoy-staging
+  syncPolicy:
+    automated:
+      prune: false # never delete data stores automatically
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: efoy-staging
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/bereketli/Efoy.git
+    targetRevision: main
+    path: deploy/helm/efoy
+    helm:
+      releaseName: efoy
+      valueFiles:
+        - values-staging.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: efoy-staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff: { duration: 10s, factor: 2, maxDuration: 3m }

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: efoy-deps
+description: Single-replica data stores for Efoy staging — PostgreSQL 16 + PostGIS + TimescaleDB, Redis, NATS JetStream and MinIO. Production uses CloudNativePG (day 19).
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

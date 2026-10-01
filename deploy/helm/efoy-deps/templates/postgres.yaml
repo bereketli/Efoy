@@ -1,0 +1,13 @@
+{{- $env := list
+  (dict "name" "POSTGRES_USER" "value" .Values.postgres.user)
+  (dict "name" "POSTGRES_DB" "value" .Values.postgres.database)
+  (dict "name" "TZ" "value" "UTC")
+-}}
+{{- $env = append $env (include "deps.secretEnv" (list . "POSTGRES_PASSWORD") | fromYamlArray | first) -}}
+{{- $probe := dict "exec" (dict "command" (list "pg_isready" "-U" .Values.postgres.user "-d" .Values.postgres.database)) "periodSeconds" 10 -}}
+{{- include "deps.store" (dict
+  "root" . "name" "postgres" "cfg" .Values.postgres
+  "ports" (dict "postgres" 5432)
+  "env" $env "probe" $probe
+  "podSecurityContext" (dict "fsGroup" 1000)
+  "mountPath" "/home/postgres/pgdata") }}

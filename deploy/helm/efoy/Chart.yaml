@@ -1,0 +1,6 @@
+apiVersion: v2
+name: efoy
+description: Efoy services — core-api, tracking-ingest, realtime-gateway, dispatch-engine, workers — and the web console.
+type: application
+version: 0.2.0
+appVersion: "0.2.0"

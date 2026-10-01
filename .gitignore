@@ -39,3 +39,9 @@ node_modules/
 *.swp
 .DS_Store
 Thumbs.db
+
+# --- Kubernetes secrets -----------------------------------------------------
+# Only SOPS-encrypted files (*.enc.yaml) and templates may be committed.
+deploy/secrets/*
+!deploy/secrets/*.enc.yaml
+!deploy/secrets/*.example.yaml

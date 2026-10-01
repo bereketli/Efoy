@@ -1,0 +1,7 @@
+{{- $probe := dict "httpGet" (dict "path" "/healthz?js-enabled-only=true" "port" 8222) "periodSeconds" 10 -}}
+{{- include "deps.store" (dict
+  "root" . "name" "nats" "cfg" .Values.nats
+  "ports" (dict "client" 4222 "monitor" 8222)
+  "args" (list "-js" "-sd" "/data" "-m" "8222")
+  "probe" $probe
+  "mountPath" "/data") }}

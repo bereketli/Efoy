@@ -58,6 +58,20 @@ paths:
               schema: { $ref: "#/components/schemas/HealthStatus" }
               example: { status: unavailable, service: core-api, version: v0.1.0, checks: { postgres: fail } }
 
+  /.well-known/jwks.json:
+    get:
+      tags: [auth]
+      operationId: getJwks
+      summary: Public keys that verify access tokens (Ed25519, JWKS)
+      description: Includes the active key and, after a rotation, the previous one.
+      security: []
+      responses:
+        "200":
+          description: The JSON Web Key Set.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JWKS" }
+
   /v1/auth/otp/request:
     post:
       tags: [auth]
@@ -229,6 +243,23 @@ components:
           schema: { $ref: "#/components/schemas/Problem" }
 
   schemas:
+    JWKS:
+      type: object
+      required: [keys]
+      properties:
+        keys:
+          type: array
+          items:
+            type: object
+            required: [kty, crv, x, kid, alg, use]
+            properties:
+              kty: { type: string, enum: [OKP] }
+              crv: { type: string, enum: [Ed25519] }
+              x: { type: string, description: Base64url public key. }
+              kid: { type: string }
+              alg: { type: string, enum: [EdDSA] }
+              use: { type: string, enum: [sig] }
+
     Problem:
       type: object
       description: RFC 9457 problem details.

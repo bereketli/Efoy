@@ -24,7 +24,8 @@ PORT_workers          := 8084
 .DEFAULT_GOAL := help
 .PHONY: help bootstrap tidy generate generate-api generate-db check-generated \
         build test lint dev dev-web db-wait migrate-up migrate-down migrate-status \
-        migrate-new compose-up compose-down mock docker-build
+        migrate-new compose-up compose-down mock docker-build staff gen-keys \
+        staging-secrets helm-lint
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -107,3 +108,16 @@ docker-build: ## Build Docker images for every service and the web console
 		docker build --build-arg SERVICE=$$s --build-arg VERSION=$(VERSION) -t efoy-$$s:$(VERSION) . || exit 1; \
 	done
 	docker build -f web/Dockerfile -t efoy-web:$(VERSION) .
+
+staff: ## Create a console account: make staff email=a@efoy.et name="Abebe Kebede" role=DISPATCHER
+	go run ./cmd/core-api create-staff --email "$(email)" --name "$(name)" --role "$(or $(role),SUPER_ADMIN)"
+
+gen-keys: ## Print a new JWT signing key and TOTP encryption key for an environment's secrets
+	go run ./cmd/core-api gen-keys
+
+staging-secrets: ## Decrypt deploy/secrets/staging.enc.yaml with SOPS and apply it to the current cluster
+	sops --decrypt deploy/secrets/staging.enc.yaml | kubectl apply -f -
+
+helm-lint: ## Lint and render the Helm charts (uses Docker)
+	docker run --rm -v "$(CURDIR)":/apps -w /apps alpine/helm:3 lint deploy/helm/efoy -f deploy/helm/efoy/values-staging.yaml
+	docker run --rm -v "$(CURDIR)":/apps -w /apps alpine/helm:3 lint deploy/helm/efoy-deps

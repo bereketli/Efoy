@@ -1,0 +1,87 @@
+# Defaults for every environment; values-<env>.yaml overrides them.
+
+image:
+  # Images are <registry>/efoy-<service>:<tag> (built by CI, see .github/workflows/ci.yml).
+  registry: ghcr.io/bereketli
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+# Non-secret settings shared by the Go services (EFOY_* env, see internal/config).
+config:
+  EFOY_ENV: staging
+  EFOY_LOG__LEVEL: info
+  EFOY_LOG__FORMAT: json
+  EFOY_SMS__PROVIDER: console
+
+# Secret settings come from this Secret, created outside the chart from the
+# SOPS-encrypted file in deploy/secrets (see deploy/README.md). Expected keys:
+# EFOY_DATABASE__URL, EFOY_REDIS__PASSWORD, EFOY_AUTH__SIGNING_KEY,
+# EFOY_AUTH__SIGNING_KEY_ID, EFOY_AUTH__TOTP_KEY, EFOY_S3__ACCESS_KEY,
+# EFOY_S3__SECRET_KEY.
+existingSecret: efoy-secrets
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+
+services:
+  core-api:
+    replicas: 2
+    resources:
+      requests: { cpu: 100m, memory: 128Mi }
+      limits: { memory: 512Mi }
+    autoscaling: { enabled: false, minReplicas: 2, maxReplicas: 6, targetCPU: 70 }
+  tracking-ingest:
+    replicas: 2
+    resources:
+      requests: { cpu: 100m, memory: 64Mi }
+      limits: { memory: 256Mi }
+    autoscaling: { enabled: false, minReplicas: 2, maxReplicas: 6, targetCPU: 70 }
+  realtime-gateway:
+    replicas: 2
+    resources:
+      requests: { cpu: 100m, memory: 128Mi }
+      limits: { memory: 1Gi }
+    autoscaling: { enabled: false, minReplicas: 2, maxReplicas: 6, targetCPU: 70 }
+  dispatch-engine:
+    replicas: 2
+    resources:
+      requests: { cpu: 50m, memory: 64Mi }
+      limits: { memory: 256Mi }
+    autoscaling: { enabled: false, minReplicas: 2, maxReplicas: 2, targetCPU: 70 }
+  workers:
+    replicas: 1
+    resources:
+      requests: { cpu: 50m, memory: 64Mi }
+      limits: { memory: 256Mi }
+    autoscaling: { enabled: false, minReplicas: 1, maxReplicas: 4, targetCPU: 70 }
+
+web:
+  enabled: true
+  replicas: 2
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { memory: 512Mi }
+
+# Runs `core-api migrate up` before every sync (Argo CD PreSync hook).
+migrations:
+  enabled: true
+
+ingress:
+  enabled: true
+  className: traefik
+  # Traefik ACME resolver configured in deploy/k3s/traefik-config.yaml.
+  certResolver: letsencrypt
+  hosts:
+    api: api.example.com
+    realtime: rt.example.com
+    console: console.example.com

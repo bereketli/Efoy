@@ -1,0 +1,32 @@
+# Staging (k3s). CI sets image.tag to the commit on main after its images are
+# pushed; Argo CD then syncs the change.
+image:
+  tag: latest
+
+imagePullSecrets:
+  - name: ghcr-pull
+
+config:
+  EFOY_ENV: staging
+  EFOY_LOG__LEVEL: debug
+  EFOY_REDIS__ADDR: efoy-deps-redis:6379
+  EFOY_NATS__URL: nats://efoy-deps-nats:4222
+  EFOY_S3__ENDPOINT: efoy-deps-minio:9000
+  # Until the SMS gateway lands (day 5), staging OTP codes are in the core-api logs.
+  EFOY_SMS__PROVIDER: console
+
+services:
+  core-api: { replicas: 2 }
+  tracking-ingest: { replicas: 1 }
+  realtime-gateway: { replicas: 1 }
+  dispatch-engine: { replicas: 1 }
+  workers: { replicas: 1 }
+
+web:
+  replicas: 1
+
+ingress:
+  hosts:
+    api: api.staging.efoy.et
+    realtime: rt.staging.efoy.et
+    console: console.staging.efoy.et

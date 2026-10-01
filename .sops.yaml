@@ -1,0 +1,7 @@
+# SOPS encrypts the data/stringData of Kubernetes Secrets in deploy/secrets
+# with age. Replace the recipient with the team's age public key(s) (one per
+# person or machine that may decrypt, comma separated). See deploy/README.md.
+creation_rules:
+  - path_regex: deploy/secrets/.*\.enc\.yaml$
+    encrypted_regex: ^(data|stringData)$
+    age: age1replacewiththeteamspublickeyxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

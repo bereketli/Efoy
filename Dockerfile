@@ -20,6 +20,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=build /out/app /app
-USER nonroot:nonroot
+# Numeric so Kubernetes runAsNonRoot can verify it (distroless "nonroot").
+USER 65532:65532
 EXPOSE 8080
 ENTRYPOINT ["/app"]

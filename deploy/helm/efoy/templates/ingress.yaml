@@ -1,0 +1,59 @@
+{{- if .Values.ingress.enabled }}
+{{- $h := .Values.ingress.hosts }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    {{- include "efoy.labels" . | nindent 4 }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.tls.certresolver: {{ .Values.ingress.certResolver }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  tls:
+    - hosts:
+        - {{ $h.api }}
+        - {{ $h.realtime }}
+        {{- if .Values.web.enabled }}
+        - {{ $h.console }}
+        {{- end }}
+  rules:
+    - host: {{ $h.api }}
+      http:
+        paths:
+          # GPS batches go to the dedicated ingest service (design doc 7.3).
+          - path: /v1/tracking
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "efoy.name" (list . "tracking-ingest") }}
+                port: { name: http }
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "efoy.name" (list . "core-api") }}
+                port: { name: http }
+    - host: {{ $h.realtime }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "efoy.name" (list . "realtime-gateway") }}
+                port: { name: http }
+    {{- if .Values.web.enabled }}
+    - host: {{ $h.console }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "efoy.name" (list . "web") }}
+                port: { name: http }
+    {{- end }}
+{{- end }}

@@ -38,6 +38,8 @@ func TestLoadDefaults(t *testing.T) {
 func TestLoadEnvOverridesNestedKeys(t *testing.T) {
 	clearEnv(t)
 	t.Setenv("EFOY_ENV", "staging")
+	t.Setenv("EFOY_AUTH__SIGNING_KEY", "pem")
+	t.Setenv("EFOY_AUTH__TOTP_KEY", "key")
 	t.Setenv("EFOY_HTTP__ADDR", ":9999")
 	t.Setenv("EFOY_HTTP__READ_TIMEOUT", "7s")
 	t.Setenv("EFOY_DATABASE__MAX_CONNS", "5")
@@ -67,4 +69,32 @@ func TestLoadRejectsInvalidValues(t *testing.T) {
 func TestEnvKey(t *testing.T) {
 	assert.Equal(t, "http.read_timeout", envKey("EFOY_HTTP__READ_TIMEOUT"))
 	assert.Equal(t, "env", envKey("EFOY_ENV"))
+}
+
+func TestLoadRequiresKeysOutsideDev(t *testing.T) {
+	clearEnv(t)
+	t.Setenv("EFOY_ENV", "staging")
+
+	_, err := Load()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "auth.signing_key is required")
+	assert.Contains(t, err.Error(), "auth.totp_key is required")
+
+	t.Setenv("EFOY_AUTH__SIGNING_KEY", "pem")
+	t.Setenv("EFOY_AUTH__TOTP_KEY", "key")
+	cfg, err := Load()
+	require.NoError(t, err)
+	assert.Equal(t, 15*time.Minute, cfg.Auth.AccessTTL)
+	assert.Equal(t, 5, cfg.Auth.OTP.MaxAttempts)
+}
+
+func TestLoadRefusesConsoleSMSInProd(t *testing.T) {
+	clearEnv(t)
+	t.Setenv("EFOY_ENV", "prod")
+	t.Setenv("EFOY_AUTH__SIGNING_KEY", "pem")
+	t.Setenv("EFOY_AUTH__TOTP_KEY", "key")
+
+	_, err := Load()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "sms.provider console")
 }

@@ -33,6 +33,8 @@ type Config struct {
 	NATS     NATS     `koanf:"nats"`
 	S3       S3       `koanf:"s3"`
 	OSRM     OSRM     `koanf:"osrm"`
+	Auth     Auth     `koanf:"auth"`
+	SMS      SMS      `koanf:"sms"`
 }
 
 type HTTP struct {
@@ -74,24 +76,67 @@ type OSRM struct {
 	URL string `koanf:"url"`
 }
 
+// Auth configures tokens, sessions and login (design doc 13.2).
+type Auth struct {
+	Issuer          string        `koanf:"issuer"`
+	Audience        string        `koanf:"audience"`
+	AccessTTL       time.Duration `koanf:"access_ttl"`
+	RefreshTTL      time.Duration `koanf:"refresh_ttl"`       // sliding, mobile apps
+	StaffSessionTTL time.Duration `koanf:"staff_session_ttl"` // absolute, web portals
+	// SigningKey is the active Ed25519 private key (PKCS#8 PEM) for access tokens.
+	SigningKey   string `koanf:"signing_key"`
+	SigningKeyID string `koanf:"signing_key_id"`
+	// PreviousPublicKey (PKIX PEM) keeps tokens signed before a key rotation valid.
+	PreviousPublicKey string `koanf:"previous_public_key"`
+	PreviousKeyID     string `koanf:"previous_key_id"`
+	// TOTPKey is a base64 32-byte AES-256-GCM key for users.totp_secret_enc.
+	TOTPKey string `koanf:"totp_key"`
+	OTP     OTP    `koanf:"otp"`
+}
+
+// OTP configures SMS one-time passwords (FR-IAM-1).
+type OTP struct {
+	TTL         time.Duration `koanf:"ttl"`
+	MaxAttempts int           `koanf:"max_attempts"`
+	RateLimit   int           `koanf:"rate_limit"` // requests per phone per RateWindow
+	RateWindow  time.Duration `koanf:"rate_window"`
+	ResendAfter time.Duration `koanf:"resend_after"`
+}
+
+type SMS struct {
+	Provider string `koanf:"provider"` // console (dev fake); AfroMessage/GeezSMS from day 5
+}
+
 func defaults() map[string]any {
 	return map[string]any{
-		"env":                   "dev",
-		"http.addr":             ":8080",
-		"http.read_timeout":     "15s",
-		"http.write_timeout":    "30s",
-		"http.idle_timeout":     "120s",
-		"http.shutdown_timeout": "20s",
-		"log.level":             "info",
-		"log.format":            "json",
-		"database.url":          "postgres://efoy:efoy@localhost:5432/efoy?sslmode=disable",
-		"database.max_conns":    20,
-		"redis.addr":            "localhost:6379",
-		"redis.db":              0,
-		"nats.url":              "nats://localhost:4222",
-		"s3.endpoint":           "localhost:9000",
-		"s3.use_ssl":            false,
-		"osrm.url":              "http://localhost:5000",
+		"env":                    "dev",
+		"http.addr":              ":8080",
+		"http.read_timeout":      "15s",
+		"http.write_timeout":     "30s",
+		"http.idle_timeout":      "120s",
+		"http.shutdown_timeout":  "20s",
+		"log.level":              "info",
+		"log.format":             "json",
+		"database.url":           "postgres://efoy:efoy@localhost:5432/efoy?sslmode=disable",
+		"database.max_conns":     20,
+		"redis.addr":             "localhost:6379",
+		"redis.db":               0,
+		"nats.url":               "nats://localhost:4222",
+		"s3.endpoint":            "localhost:9000",
+		"s3.use_ssl":             false,
+		"osrm.url":               "http://localhost:5000",
+		"auth.issuer":            "efoy",
+		"auth.audience":          "efoy-api",
+		"auth.access_ttl":        "15m",
+		"auth.refresh_ttl":       "720h",
+		"auth.staff_session_ttl": "12h",
+		"auth.signing_key_id":    "dev",
+		"auth.otp.ttl":           "5m",
+		"auth.otp.max_attempts":  5,
+		"auth.otp.rate_limit":    3,
+		"auth.otp.rate_window":   "10m",
+		"auth.otp.resend_after":  "60s",
+		"sms.provider":           "console",
 	}
 }
 
@@ -140,6 +185,24 @@ func (c *Config) validate() error {
 	case "json", "text":
 	default:
 		errs = append(errs, fmt.Errorf("log.format must be json or text, got %q", c.Log.Format))
+	}
+	if c.Env != "dev" {
+		// Dev falls back to fixed, publicly known keys; nothing else may.
+		if c.Auth.SigningKey == "" {
+			errs = append(errs, errors.New("auth.signing_key is required outside dev"))
+		}
+		if c.Auth.TOTPKey == "" {
+			errs = append(errs, errors.New("auth.totp_key is required outside dev"))
+		}
+	}
+	if c.Env == "prod" && c.SMS.Provider == "console" {
+		errs = append(errs, errors.New("sms.provider console is not allowed in prod"))
+	}
+	if c.Auth.AccessTTL <= 0 || c.Auth.RefreshTTL <= 0 || c.Auth.StaffSessionTTL <= 0 {
+		errs = append(errs, errors.New("auth TTLs must be positive"))
+	}
+	if c.Auth.OTP.MaxAttempts < 1 || c.Auth.OTP.RateLimit < 1 {
+		errs = append(errs, errors.New("auth.otp.max_attempts and auth.otp.rate_limit must be at least 1"))
 	}
 	return errors.Join(errs...)
 }

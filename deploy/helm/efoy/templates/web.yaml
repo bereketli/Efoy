@@ -1,0 +1,75 @@
+{{- if .Values.web.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "efoy.name" (list . "web") }}
+  labels:
+    {{- include "efoy.labels" . | nindent 4 }}
+    {{- include "efoy.selector" (list . "web") | nindent 4 }}
+spec:
+  replicas: {{ .Values.web.replicas }}
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      {{- include "efoy.selector" (list . "web") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "efoy.selector" (list . "web") | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: web
+          image: {{ include "efoy.image" (list . "web") }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            # Route handlers call core-api inside the cluster and verify
+            # tokens against its JWKS.
+            - name: EFOY_API_URL
+              value: http://{{ include "efoy.name" (list . "core-api") }}:8080
+          ports:
+            - name: http
+              containerPort: 3000
+          readinessProbe:
+            httpGet: { path: /login, port: http }
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /login, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.web.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          volumeMounts:
+            # Next.js writes its cache here; the rest of the filesystem is read-only.
+            - name: next-cache
+              mountPath: /app/.next/cache
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: next-cache
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "efoy.name" (list . "web") }}
+  labels:
+    {{- include "efoy.labels" . | nindent 4 }}
+    {{- include "efoy.selector" (list . "web") | nindent 4 }}
+spec:
+  selector:
+    {{- include "efoy.selector" (list . "web") | nindent 4 }}
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+{{- end }}

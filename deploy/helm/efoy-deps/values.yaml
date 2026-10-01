@@ -1,0 +1,37 @@
+# Secret with POSTGRES_PASSWORD, REDIS_PASSWORD, MINIO_ROOT_USER and
+# MINIO_ROOT_PASSWORD, created from deploy/secrets (see deploy/README.md).
+existingSecret: efoy-deps-secrets
+
+storageClass: ""  # empty = cluster default (local-path on k3s)
+
+postgres:
+  image: timescale/timescaledb-ha:pg16
+  database: efoy
+  user: efoy
+  storage: 20Gi
+  resources:
+    requests: { cpu: 250m, memory: 512Mi }
+    limits: { memory: 2Gi }
+
+redis:
+  image: redis:7-alpine
+  storage: 1Gi
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { memory: 256Mi }
+
+nats:
+  image: nats:2.10-alpine
+  storage: 5Gi
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { memory: 512Mi }
+
+minio:
+  image: minio/minio:latest
+  mcImage: minio/mc:latest
+  storage: 20Gi
+  buckets: [efoy-documents, efoy-media, efoy-exports]
+  resources:
+    requests: { cpu: 50m, memory: 256Mi }
+    limits: { memory: 1Gi }

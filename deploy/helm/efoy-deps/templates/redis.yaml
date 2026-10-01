@@ -1,0 +1,8 @@
+{{- $env := list (include "deps.secretEnv" (list . "REDIS_PASSWORD") | fromYamlArray | first) -}}
+{{- $probe := dict "exec" (dict "command" (list "sh" "-c" "redis-cli -a \"$REDIS_PASSWORD\" --no-auth-warning ping")) "periodSeconds" 10 -}}
+{{- include "deps.store" (dict
+  "root" . "name" "redis" "cfg" .Values.redis
+  "ports" (dict "redis" 6379)
+  "args" (list "--requirepass" "$(REDIS_PASSWORD)" "--appendonly" "yes")
+  "env" $env "probe" $probe
+  "mountPath" "/data") }}
