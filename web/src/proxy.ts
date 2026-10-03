@@ -9,7 +9,8 @@ import { refreshSession } from "@/lib/auth/upstream";
 //  - a valid access token passes through;
 //  - an expired one is refreshed with the refresh cookie, and the new tokens
 //    are passed to this request and stored for the next ones;
-//  - otherwise pages redirect to /login and API calls get core-api's 401.
+//  - otherwise signed-out visitors to / see the landing page, other pages
+//    redirect to /login and API calls get core-api's 401.
 export async function proxy(request: NextRequest) {
   const access = request.cookies.get(ACCESS_COOKIE)?.value;
   if (access && (await verifyAccessToken(access))) {
@@ -34,7 +35,9 @@ export async function proxy(request: NextRequest) {
 
   const isApi = request.nextUrl.pathname.startsWith("/api/");
   let response: NextResponse;
-  if (isApi) {
+  if (request.nextUrl.pathname === "/") {
+    response = NextResponse.rewrite(new URL("/welcome", request.url));
+  } else if (isApi) {
     response = NextResponse.next();
   } else {
     const login = new URL("/login", request.url);
@@ -47,5 +50,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!login|api/auth|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  matcher: ["/((?!login|welcome|api/auth|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
 };
